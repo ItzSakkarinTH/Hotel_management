@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react'
 import styles from './page.module.css'
-s
 export default function Landing() {
 	const rooms = [
 		{ id: 'A-101', title: 'ห้องสตูดิโอ สวยงาม', price: '฿3,500/เดือน', img: '/room1.jpg', available: true },

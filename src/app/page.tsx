@@ -50,7 +50,7 @@ export default function PublicDashboard() {
             ยินดีต้อนรับสู่ระบบจัดการหอพัก
           </h1>
           <p className={styles.heroSubtitle}>
-            จองห้องพัก จ่ายค่าน้ำค่าไฟ และติดตามข่าวสารได้ง่ายๆ
+            จองห้องพัก จ่ายค่าน้ำค่าไฟ และติดตามข่าวสารหอพักได้ง่ายๆ
           </p>
           <div className={styles.heroCta}>
             <Link href="/login" className={styles.btnPrimary}>

@@ -1,29 +1,27 @@
-import jwt from 'jsonwebtoken';
+import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 import { JWTPayload } from '@/types';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+const JWT_SECRET: Secret = process.env.JWT_SECRET || 'yourmom';
+const JWT_EXPIRES_IN = '7d'; 
 
 export const generateToken = (payload: Omit<JWTPayload, 'iat' | 'exp'>): string => {
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
-  });
+  const options: SignOptions = { expiresIn: JWT_EXPIRES_IN };
+  
+  return jwt.sign(payload as object, JWT_SECRET, options);
 };
 
 export const verifyToken = (token: string): JWTPayload | null => {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
-    return decoded;
-  } catch (error) {
+    return jwt.verify(token, JWT_SECRET) as JWTPayload;
+  } catch {
     return null;
   }
 };
 
 export const decodeToken = (token: string): JWTPayload | null => {
   try {
-    const decoded = jwt.decode(token) as JWTPayload;
-    return decoded;
-  } catch (error) {
+    return jwt.decode(token) as JWTPayload;
+  } catch {
     return null;
   }
 };

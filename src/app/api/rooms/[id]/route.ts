@@ -7,12 +7,13 @@ import { requireAdmin } from '@/middleware/auth';
 // GET single room
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
 
-    const room = await Room.findById(params.id);
+    const { id } = await context.params;
+    const room = await Room.findById(id);
 
     if (!room) {
       return NextResponse.json<ApiResponse>(

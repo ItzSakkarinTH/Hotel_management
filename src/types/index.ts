@@ -118,7 +118,7 @@ export interface IAnnouncement {
   title: string;
   content: string;
   priority: 'low' | 'medium' | 'high';
-  publishedBy: string;
+  publishedBy: string | Partial<IUser>; 
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;

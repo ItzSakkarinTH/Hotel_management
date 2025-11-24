@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Link from 'next/link';
+import styles from './UserDashboard.module.css';
 
 export default function UserDashboard() {
   const router = useRouter();
@@ -44,12 +45,10 @@ export default function UserDashboard() {
       const utilities = utilitiesRes.data.data;
       const announcements = announcementsRes.data.data;
 
-      // Get current booking (confirmed or pending)
       const currentBooking = bookings.find(
         (b: any) => b.status === 'confirmed' || b.status === 'pending'
       );
 
-      // Count unpaid bills
       const unpaidBills = utilities.filter((u: any) => !u.paid);
       const totalUnpaid = unpaidBills.reduce(
         (sum: number, bill: any) => sum + bill.totalCost,
@@ -76,114 +75,111 @@ export default function UserDashboard() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-xl">กำลังโหลด...</div>
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingText}>กำลังโหลด...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={styles.container}>
       {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex justify-between items-center">
+      <div className={styles.header}>
+        <div className={styles.headerContent}>
+          <div className={styles.headerInfo}>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className={styles.headerTitle}>
                 สวัสดี, {user?.firstName} {user?.lastName}
               </h1>
-              <p className="text-gray-600 mt-1">{user?.email}</p>
+              <p className={styles.headerEmail}>{user?.email}</p>
             </div>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-            >
+            <button onClick={handleLogout} className={styles.logoutBtn}>
               ออกจากระบบ
             </button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className={styles.content}>
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center justify-between">
+        <div className={styles.statsGrid}>
+          <div className={styles.statCard}>
+            <div className={styles.statContent}>
               <div>
-                <p className="text-sm text-gray-600 mb-1">สถานะการเข้าพัก</p>
+                <p className={styles.statLabel}>สถานะการเข้าพัก</p>
                 {stats.currentBooking ? (
                   <>
-                    <p className="text-2xl font-bold text-green-600">กำลังเข้าพัก</p>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className={styles.statValueGreen}>กำลังเข้าพัก</p>
+                    <p className={styles.statSubtext}>
                       ห้อง {stats.currentBooking.roomId?.roomNumber}
                     </p>
                   </>
                 ) : (
-                  <p className="text-2xl font-bold text-gray-400">ยังไม่ได้เข้าพัก</p>
+                  <p className={styles.statValueGray}>ยังไม่ได้เข้าพัก</p>
                 )}
               </div>
-              <div className="text-4xl">🏠</div>
+              <div className={styles.statIcon}>🏠</div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center justify-between">
+          <div className={styles.statCard}>
+            <div className={styles.statContent}>
               <div>
-                <p className="text-sm text-gray-600 mb-1">บิลค้างชำระ</p>
-                <p className="text-2xl font-bold text-red-600">
+                <p className={styles.statLabel}>บิลค้างชำระ</p>
+                <p className={styles.statValueRed}>
                   {stats.unpaidBills} รายการ
                 </p>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className={styles.statSubtext}>
                   {stats.totalUnpaid.toLocaleString()} บาท
                 </p>
               </div>
-              <div className="text-4xl">💳</div>
+              <div className={styles.statIcon}>💳</div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center justify-between">
+          <div className={styles.statCard}>
+            <div className={styles.statContent}>
               <div>
-                <p className="text-sm text-gray-600 mb-1">ประกาศใหม่</p>
-                <p className="text-2xl font-bold text-indigo-600">
+                <p className={styles.statLabel}>ประกาศใหม่</p>
+                <p className={styles.statValueIndigo}>
                   {stats.announcements.length} รายการ
                 </p>
               </div>
-              <div className="text-4xl">📢</div>
+              <div className={styles.statIcon}>📢</div>
             </div>
           </div>
         </div>
 
         {/* Current Booking */}
         {stats.currentBooking && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">ห้องพักปัจจุบัน</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className={styles.bookingCard}>
+            <h2 className={styles.cardTitle}>ห้องพักปัจจุบัน</h2>
+            <div className={styles.bookingGrid}>
               <div>
-                <p className="text-sm text-gray-600">เลขห้อง</p>
-                <p className="text-lg font-semibold text-gray-900">
+                <p className={styles.fieldLabel}>เลขห้อง</p>
+                <p className={styles.fieldValue}>
                   {stats.currentBooking.roomId?.roomNumber}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">ค่าห้อง/เดือน</p>
-                <p className="text-lg font-semibold text-gray-900">
+                <p className={styles.fieldLabel}>ค่าห้อง/เดือน</p>
+                <p className={styles.fieldValue}>
                   {stats.currentBooking.roomId?.price?.toLocaleString()} บาท
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">วันเข้าพัก</p>
-                <p className="text-lg font-semibold text-gray-900">
+                <p className={styles.fieldLabel}>วันเข้าพัก</p>
+                <p className={styles.fieldValue}>
                   {new Date(stats.currentBooking.checkInDate).toLocaleDateString('th-TH')}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">สถานะ</p>
-                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                <p className={styles.fieldLabel}>สถานะ</p>
+                <span className={
                   stats.currentBooking.status === 'confirmed'
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-yellow-100 text-yellow-800'
-                }`}>
+                    ? styles.badgeGreen
+                    : styles.badgeYellow
+                }>
                   {stats.currentBooking.status === 'confirmed' ? 'ยืนยันแล้ว' : 'รอดำเนินการ'}
                 </span>
               </div>
@@ -191,75 +187,63 @@ export default function UserDashboard() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className={styles.mainGrid}>
           {/* Quick Actions */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">เมนูด่วน</h2>
-            <div className="space-y-3">
-              <Link
-                href="/rooms"
-                className="flex items-center justify-between p-4 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
-              >
-                <div className="flex items-center">
-                  <span className="text-2xl mr-3">🏨</span>
-                  <span className="font-medium text-indigo-900">ดูห้องพักว่าง</span>
+          <div className={styles.card}>
+            <h2 className={styles.cardTitle}>เมนูด่วน</h2>
+            <div className={styles.menuList}>
+              <Link href="/rooms" className={styles.menuItemIndigo}>
+                <div className={styles.menuItemContent}>
+                  <span className={styles.menuIcon}>🏨</span>
+                  <span className={styles.menuText}>ดูห้องพักว่าง</span>
                 </div>
-                <span className="text-indigo-600">→</span>
+                <span className={styles.menuArrow}>→</span>
               </Link>
 
-              <Link
-                href="/utilities"
-                className="flex items-center justify-between p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
-              >
-                <div className="flex items-center">
-                  <span className="text-2xl mr-3">💡</span>
-                  <span className="font-medium text-blue-900">ค่าน้ำค่าไฟ</span>
+              <Link href="/utilities" className={styles.menuItemBlue}>
+                <div className={styles.menuItemContent}>
+                  <span className={styles.menuIcon}>💡</span>
+                  <span className={styles.menuText}>ค่าน้ำค่าไฟ</span>
                 </div>
                 {stats.unpaidBills > 0 && (
-                  <span className="px-2 py-1 bg-red-500 text-white text-xs rounded-full">
+                  <span className={styles.badge}>
                     {stats.unpaidBills}
                   </span>
                 )}
               </Link>
 
               {stats.currentBooking && (
-                <Link
-                  href="/booking-history"
-                  className="flex items-center justify-between p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
-                >
-                  <div className="flex items-center">
-                    <span className="text-2xl mr-3">📋</span>
-                    <span className="font-medium text-green-900">ประวัติการจอง</span>
+                <Link href="/booking-history" className={styles.menuItemGreen}>
+                  <div className={styles.menuItemContent}>
+                    <span className={styles.menuIcon}>📋</span>
+                    <span className={styles.menuText}>ประวัติการจอง</span>
                   </div>
-                  <span className="text-green-600">→</span>
+                  <span className={styles.menuArrow}>→</span>
                 </Link>
               )}
             </div>
           </div>
 
           {/* Announcements */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">ประกาศล่าสุด</h2>
-            <div className="space-y-4">
+          <div className={styles.card}>
+            <h2 className={styles.cardTitle}>ประกาศล่าสุด</h2>
+            <div className={styles.announcementList}>
               {stats.announcements.length > 0 ? (
                 stats.announcements.map((announcement) => (
-                  <div
-                    key={announcement._id}
-                    className="border-l-4 border-indigo-500 pl-4 py-2"
-                  >
-                    <h3 className="font-semibold text-gray-900 mb-1">
+                  <div key={announcement._id} className={styles.announcementItem}>
+                    <h3 className={styles.announcementTitle}>
                       {announcement.title}
                     </h3>
-                    <p className="text-sm text-gray-600 line-clamp-2">
+                    <p className={styles.announcementContent}>
                       {announcement.content}
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className={styles.announcementDate}>
                       {new Date(announcement.createdAt).toLocaleDateString('th-TH')}
                     </p>
                   </div>
                 ))
               ) : (
-                <p className="text-gray-500 text-center py-4">ไม่มีประกาศในขณะนี้</p>
+                <p className={styles.emptyState}>ไม่มีประกาศในขณะนี้</p>
               )}
             </div>
           </div>

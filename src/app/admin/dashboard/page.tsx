@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Link from 'next/link';
+import styles from './AdminDashboard.module.css';
 
 interface DashboardStats {
   totalRooms: number;
@@ -12,6 +13,13 @@ interface DashboardStats {
   pendingPayments: number;
   totalRevenue: number;
   activeBookings: number;
+}
+
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  color: string;
+  link: string;
 }
 
 export default function AdminDashboard() {
@@ -69,35 +77,32 @@ export default function AdminDashboard() {
     }
   };
 
-  const StatCard = ({ title, value, color, link }: any) => (
-    <Link href={link}>
-      <div className={`bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer border-l-4 ${color}`}>
-        <h3 className="text-gray-600 text-sm font-medium mb-2">{title}</h3>
-        <p className="text-3xl font-bold text-gray-900">{value}</p>
+  const StatCard = ({ title, value, color, link }: StatCardProps) => (
+    <Link href={link} className={styles.statCardLink}>
+      <div className={`${styles.statCard} ${styles[color]}`}>
+        <h3 className={styles.statTitle}>{title}</h3>
+        <p className={styles.statValue}>{value}</p>
       </div>
     </Link>
   );
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-xl">กำลังโหลด...</div>
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingText}>กำลังโหลด...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={styles.container}>
       {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-gray-900">แดชบอร์ดผู้ดูแลระบบ</h1>
-            <div className="flex gap-4">
-              <Link
-                href="/admin/rooms-management"
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-              >
+      <div className={styles.header}>
+        <div className={styles.headerContent}>
+          <div className={styles.headerInfo}>
+            <h1 className={styles.headerTitle}>แดชบอร์ดผู้ดูแลระบบ</h1>
+            <div className={styles.headerButtons}>
+              <Link href="/admin/rooms-management" className={styles.btnPrimary}>
                 จัดการห้องพัก
               </Link>
               <button
@@ -105,7 +110,7 @@ export default function AdminDashboard() {
                   localStorage.clear();
                   router.push('/login');
                 }}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                className={styles.btnDanger}
               >
                 ออกจากระบบ
               </button>
@@ -115,73 +120,61 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <div className={styles.content}>
+        <div className={styles.statsGrid}>
           <StatCard
             title="ห้องพักทั้งหมด"
             value={stats.totalRooms}
-            color="border-blue-500"
+            color="borderBlue"
             link="/admin/rooms-management"
           />
           <StatCard
             title="ห้องว่าง"
             value={stats.availableRooms}
-            color="border-green-500"
+            color="borderGreen"
             link="/admin/rooms-management?status=available"
           />
           <StatCard
             title="ห้องเต็ม"
             value={stats.occupiedRooms}
-            color="border-red-500"
+            color="borderRed"
             link="/admin/rooms-management?status=occupied"
           />
           <StatCard
             title="การจองที่รอดำเนินการ"
             value={stats.activeBookings}
-            color="border-yellow-500"
+            color="borderYellow"
             link="/admin/bookings"
           />
           <StatCard
             title="สลิปรอตรวจสอบ"
             value={stats.pendingPayments}
-            color="border-purple-500"
+            color="borderPurple"
             link="/admin/payments"
           />
           <StatCard
             title="รายได้รวม"
             value={`${stats.totalRevenue.toLocaleString()} ฿`}
-            color="border-emerald-500"
+            color="borderEmerald"
             link="/admin/payments"
           />
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">เมนูด่วน</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Link
-              href="/admin/rooms-management/new"
-              className="flex items-center justify-center p-4 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors"
-            >
-              <span className="font-medium">+ เพิ่มห้องพักใหม่</span>
+        <div className={styles.quickActionsCard}>
+          <h2 className={styles.quickActionsTitle}>เมนูด่วน</h2>
+          <div className={styles.quickActionsGrid}>
+            <Link href="/admin/rooms-management/new" className={styles.actionIndigo}>
+              <span className={styles.actionText}>+ เพิ่มห้องพักใหม่</span>
             </Link>
-            <Link
-              href="/admin/bookings"
-              className="flex items-center justify-center p-4 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
-            >
-              <span className="font-medium">จัดการการจอง</span>
+            <Link href="/admin/bookings" className={styles.actionGreen}>
+              <span className={styles.actionText}>จัดการการจอง</span>
             </Link>
-            <Link
-              href="/admin/payments"
-              className="flex items-center justify-center p-4 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors"
-            >
-              <span className="font-medium">ตรวจสอบสลิป</span>
+            <Link href="/admin/payments" className={styles.actionPurple}>
+              <span className={styles.actionText}>ตรวจสอบสลิป</span>
             </Link>
-            <Link
-              href="/admin/announcements"
-              className="flex items-center justify-center p-4 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors"
-            >
-              <span className="font-medium">ประกาศข่าวสาร</span>
+            <Link href="/admin/announcements" className={styles.actionOrange}>
+              <span className={styles.actionText}>ประกาศข่าวสาร</span>
             </Link>
           </div>
         </div>

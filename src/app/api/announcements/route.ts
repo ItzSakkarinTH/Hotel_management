@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { Announcement } from '@/models/Announcement';
+import { Announcement } from '@/models/Announcement1';
 import { ApiResponse } from '@/types';
 import { requireAdmin, AuthRequest } from '@/middleware/auth';
 

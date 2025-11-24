@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { UtilityBill } from '@/models/UtilityBill';
-import { Room } from '@/models/Room';
+import { UtilityBill } from '@/models/UtilityBill1';
+import { Room } from '@/models/Room1';
 import { ApiResponse } from '@/types';
 import { requireAuth, requireAdmin, AuthRequest } from '@/middleware/auth';
 

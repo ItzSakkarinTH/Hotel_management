@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { Payment } from '@/models/Payment1';
-import { Booking } from '@/models/Booking1';
-import { Room } from '@/models/Room1';
+import { Payment } from '@/models/Payment';
+import { Booking } from '@/models/Booking';
+import { Room } from '@/models/Room';
 import { ApiResponse, PaymentType, PaymentStatus, BookingStatus, RoomStatus } from '@/types';
 import { requireAuth, AuthRequest } from '@/middleware/auth';
 

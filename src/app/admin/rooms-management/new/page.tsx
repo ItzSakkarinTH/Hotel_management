@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { IRoom, RoomStatus } from '@/types';
 import Image from 'next/image';
-import styles from './new/RoomsManagement.module.css';
+import styles from './RoomsManagement.module.css';
 
 export default function RoomsManagementPage() {
   const router = useRouter();

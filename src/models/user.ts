@@ -16,6 +16,7 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
       unique: true,
       lowercase: true,
       trim: true,
+      // ลบ index: true ออก เพราะเรามี schema.index() อยู่แล้ว
     },
     password: {
       type: String,
@@ -52,17 +53,14 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
   }
 );
 
-// Hash password before saving
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
+// Hash password before saving - ไม่ต้องใช้ next() แล้ว
+userSchema.pre('save', async function () {
+  // ถ้า password ไม่ได้ถูกแก้ไข ก็ return ออกไปเลย
+  if (!this.isModified('password')) return;
   
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error: any) {
-    next(error);
-  }
+  // Hash password
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
 });
 
 // Method to compare password
@@ -80,4 +78,7 @@ userSchema.methods.comparePassword = async function (
 userSchema.index({ email: 1 });
 userSchema.index({ role: 1 });
 
-export const User = mongoose.models.User || mongoose.model<IUser, UserModel>('User', userSchema);
+// ป้องกัน OverwriteModelError ใน development mode
+export const User = (mongoose.models.User as UserModel) || 
+  mongoose.model<IUser, UserModel>('User', userSchema);
+  

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { IBooking, BookingStatus } from '@/types';
+import styles from './AdminBookingsPage.module.css';
 
 interface BookingWithDetails extends IBooking {
   roomId: any;
@@ -33,11 +34,11 @@ export default function AdminBookingsPage() {
   };
 
   const getStatusBadge = (status: BookingStatus) => {
-    const badges = {
-      [BookingStatus.PENDING]: 'bg-yellow-100 text-yellow-800',
-      [BookingStatus.CONFIRMED]: 'bg-green-100 text-green-800',
-      [BookingStatus.CANCELLED]: 'bg-red-100 text-red-800',
-      [BookingStatus.COMPLETED]: 'bg-blue-100 text-blue-800',
+    const statusStyles = {
+      [BookingStatus.PENDING]: styles.statusPending,
+      [BookingStatus.CONFIRMED]: styles.statusConfirmed,
+      [BookingStatus.CANCELLED]: styles.statusCancelled,
+      [BookingStatus.COMPLETED]: styles.statusCompleted,
     };
     
     const labels = {
@@ -48,7 +49,7 @@ export default function AdminBookingsPage() {
     };
 
     return (
-      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${badges[status]}`}>
+      <span className={`${styles.statusBadge} ${statusStyles[status]}`}>
         {labels[status]}
       </span>
     );
@@ -59,120 +60,94 @@ export default function AdminBookingsPage() {
     : bookings.filter(b => b.status === filter);
 
   if (loading) {
-    return <div className="flex justify-center items-center min-h-screen">กำลังโหลด...</div>;
+    return <div className={styles.loadingContainer}>กำลังโหลด...</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">จัดการการจอง</h1>
+    <div className={styles.pageContainer}>
+      <div className={styles.contentWrapper}>
+        <h1 className={styles.pageTitle}>จัดการการจอง</h1>
 
         {/* Filters */}
-        <div className="mb-6 flex gap-2 flex-wrap">
+        <div className={styles.filterContainer}>
           <button
             onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-lg ${
-              filter === 'all' 
-                ? 'bg-indigo-600 text-white' 
-                : 'bg-white text-gray-700 border border-gray-300'
-            }`}
+            className={filter === 'all' ? styles.filterButtonActive : styles.filterButton}
           >
             ทั้งหมด ({bookings.length})
           </button>
           <button
             onClick={() => setFilter(BookingStatus.PENDING)}
-            className={`px-4 py-2 rounded-lg ${
-              filter === BookingStatus.PENDING 
-                ? 'bg-yellow-600 text-white' 
-                : 'bg-white text-gray-700 border border-gray-300'
-            }`}
+            className={filter === BookingStatus.PENDING ? styles.filterButtonPending : styles.filterButton}
           >
             รอดำเนินการ ({bookings.filter(b => b.status === BookingStatus.PENDING).length})
           </button>
           <button
             onClick={() => setFilter(BookingStatus.CONFIRMED)}
-            className={`px-4 py-2 rounded-lg ${
-              filter === BookingStatus.CONFIRMED 
-                ? 'bg-green-600 text-white' 
-                : 'bg-white text-gray-700 border border-gray-300'
-            }`}
+            className={filter === BookingStatus.CONFIRMED ? styles.filterButtonConfirmed : styles.filterButton}
           >
             ยืนยันแล้ว ({bookings.filter(b => b.status === BookingStatus.CONFIRMED).length})
           </button>
         </div>
 
         {/* Bookings Table */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+        <div className={styles.tableCard}>
+          <div className={styles.tableWrapper}>
+            <table className={styles.table}>
+              <thead className={styles.tableHead}>
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ผู้จอง
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ห้อง
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    วันเข้าพัก
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ยอดเงิน
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ชำระมัดจำ
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    สถานะ
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    วันที่จอง
-                  </th>
+                  <th className={styles.tableHeader}>ผู้จอง</th>
+                  <th className={styles.tableHeader}>ห้อง</th>
+                  <th className={styles.tableHeader}>วันเข้าพัก</th>
+                  <th className={styles.tableHeader}>ยอดเงิน</th>
+                  <th className={styles.tableHeader}>ชำระมัดจำ</th>
+                  <th className={styles.tableHeader}>สถานะ</th>
+                  <th className={styles.tableHeader}>วันที่จอง</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className={styles.tableBody}>
                 {filteredBookings.map((booking) => (
-                  <tr key={booking._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
+                  <tr key={booking._id} className={styles.tableRow}>
+                    <td className={styles.tableCell}>
+                      <div className={styles.userName}>
                         {booking.userId?.firstName} {booking.userId?.lastName}
                       </div>
-                      <div className="text-sm text-gray-500">{booking.userId?.email}</div>
-                      <div className="text-sm text-gray-500">{booking.userId?.phoneNumber}</div>
+                      <div className={styles.userEmail}>{booking.userId?.email}</div>
+                      <div className={styles.userPhone}>{booking.userId?.phoneNumber}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
+                    <td className={styles.tableCell}>
+                      <div className={styles.roomNumber}>
                         ห้อง {booking.roomId?.roomNumber}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className={styles.roomPrice}>
                         {booking.roomId?.price?.toLocaleString()} ฿/เดือน
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
+                    <td className={styles.tableCell}>
+                      <div className={styles.dateText}>
                         {new Date(booking.checkInDate).toLocaleDateString('th-TH')}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
+                    <td className={styles.tableCell}>
+                      <div className={styles.amountText}>
                         {booking.totalAmount.toLocaleString()} ฿
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className={styles.tableCell}>
                       {booking.depositPaid ? (
-                        <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        <span className={`${styles.depositBadge} ${styles.depositPaid}`}>
                           ชำระแล้ว
                         </span>
                       ) : (
-                        <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                        <span className={`${styles.depositBadge} ${styles.depositUnpaid}`}>
                           ยังไม่ชำระ
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className={styles.tableCell}>
                       {getStatusBadge(booking.status)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className={`${styles.tableCell} ${styles.dateCell}`}>
                       {new Date(booking.createdAt).toLocaleDateString('th-TH')}
                     </td>
                   </tr>
@@ -183,8 +158,8 @@ export default function AdminBookingsPage() {
         </div>
 
         {filteredBookings.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-lg shadow-md mt-4">
-            <p className="text-gray-500 text-lg">ไม่พบข้อมูลการจอง</p>
+          <div className={styles.emptyState}>
+            <p className={styles.emptyStateText}>ไม่พบข้อมูลการจอง</p>
           </div>
         )}
       </div>

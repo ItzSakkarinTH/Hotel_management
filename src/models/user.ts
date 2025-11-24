@@ -75,7 +75,7 @@ userSchema.methods.comparePassword = async function (
 };
 
 // Index for better query performance
-userSchema.index({ email: 1 });
+
 userSchema.index({ role: 1 });
 
 // ป้องกัน OverwriteModelError ใน development mode

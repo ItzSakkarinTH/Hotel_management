@@ -1,0 +1,230 @@
+/* Page Layout */
+.pageContainer {
+  min-height: 100vh;
+  background-color: #f9fafb;
+  padding: 2rem 1rem;
+}
+
+.contentWrapper {
+  max-width: 80rem;
+  margin: 0 auto;
+}
+
+.pageTitle {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 1.5rem;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* Filters */
+.filterContainer {
+  margin-bottom: 1.5rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filterButton {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background-color: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filterButton:hover {
+  background-color: #f9fafb;
+}
+
+.filterButtonActive {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.filterButtonPending {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background-color: #ca8a04;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.filterButtonConfirmed {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background-color: #16a34a;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+/* Table */
+.tableCard {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.tableHead {
+  background-color: #f9fafb;
+}
+
+.tableHeader {
+  padding: 0.75rem 1.5rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tableBody {
+  background-color: white;
+  divide-y: 1px solid #e5e7eb;
+}
+
+.tableRow {
+  border-top: 1px solid #e5e7eb;
+  transition: background-color 0.15s;
+}
+
+.tableRow:hover {
+  background-color: #f9fafb;
+}
+
+.tableCell {
+  padding: 1rem 1.5rem;
+  white-space: nowrap;
+}
+
+/* Table Content Styles */
+.userName {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+}
+
+.userEmail,
+.userPhone {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.roomNumber {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+}
+
+.roomPrice {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.dateText {
+  font-size: 0.875rem;
+  color: #111827;
+}
+
+.amountText {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+}
+
+.dateCell {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+/* Status Badges */
+.statusBadge {
+  padding: 0.25rem 0.5rem;
+  display: inline-flex;
+  font-size: 0.75rem;
+  line-height: 1.25;
+  font-weight: 600;
+  border-radius: 9999px;
+}
+
+.statusPending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.statusConfirmed {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.statusCancelled {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.statusCompleted {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+/* Deposit Badges */
+.depositBadge {
+  padding: 0.25rem 0.5rem;
+  display: inline-flex;
+  font-size: 0.75rem;
+  line-height: 1.25;
+  font-weight: 600;
+  border-radius: 9999px;
+}
+
+.depositPaid {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.depositUnpaid {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: 3rem 0;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  margin-top: 1rem;
+}
+
+.emptyStateText {
+  color: #6b7280;
+  font-size: 1.125rem;
+}

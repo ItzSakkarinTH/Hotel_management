@@ -123,9 +123,6 @@ export default function AdminDashboard() {
       <Navbar isLoggedIn={true} isAdmin={true} />
       <div className={styles.container}>
         <div className={styles.content}>
-          <div style={{ marginBottom: '1rem' }}>
-            <BackButton />
-          </div>
 
           <div className={styles.headerInfo} style={{ marginBottom: '2rem' }}>
             <h1 className={styles.headerTitle}>แดชบอร์ดผู้ดูแลระบบ</h1>

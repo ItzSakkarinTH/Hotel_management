@@ -146,9 +146,6 @@ export default function AdminAnnouncementsPage() {
       <Navbar isLoggedIn={true} isAdmin={true} />
       <div className={styles.container}>
         <div className={styles.wrapper}>
-          <div style={{ marginBottom: '1rem' }}>
-            <BackButton />
-          </div>
           <div className={styles.header}>
             <h1 className={styles.title}>จัดการประกาศข่าวสาร</h1>
             <button

@@ -199,9 +199,6 @@ export default function RoomsManagementPage() {
       <Navbar isLoggedIn={true} isAdmin={true} />
       <div className={styles.container}>
         <div className={styles.content}>
-          <div style={{ marginBottom: '1rem' }}>
-            <BackButton />
-          </div>
           <div className={styles.header}>
             <h1 className={styles.title}>จัดการห้องพัก</h1>
             <button

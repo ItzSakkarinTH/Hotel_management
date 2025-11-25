@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { IUtilityBill } from '@/types';
+import { IUtilityBill, IRoom } from '@/types';
 import styles from './Utilities.module.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import BackButton from '@/components/BackButton';
 
-interface UtilityBillWithDetails extends IUtilityBill {
-    roomId: any;
+interface UtilityBillWithDetails extends Omit<IUtilityBill, 'roomId'> {
+    roomId: IRoom;
 }
 
 export default function UtilitiesPage() {
@@ -70,8 +70,8 @@ export default function UtilitiesPage() {
                         <button
                             onClick={() => setFilter('all')}
                             className={`${styles.filterButton} ${filter === 'all'
-                                    ? styles.activeFilter
-                                    : styles.inactiveFilter
+                                ? styles.activeFilter
+                                : styles.inactiveFilter
                                 }`}
                         >
                             ทั้งหมด ({bills.length})
@@ -79,8 +79,8 @@ export default function UtilitiesPage() {
                         <button
                             onClick={() => setFilter('unpaid')}
                             className={`${styles.filterButton} ${filter === 'unpaid'
-                                    ? styles.activeFilterUnpaid
-                                    : styles.inactiveFilter
+                                ? styles.activeFilterUnpaid
+                                : styles.inactiveFilter
                                 }`}
                         >
                             ยังไม่ชำระ ({bills.filter(b => !b.paid).length})
@@ -88,8 +88,8 @@ export default function UtilitiesPage() {
                         <button
                             onClick={() => setFilter('paid')}
                             className={`${styles.filterButton} ${filter === 'paid'
-                                    ? styles.activeFilterPaid
-                                    : styles.inactiveFilter
+                                ? styles.activeFilterPaid
+                                : styles.inactiveFilter
                                 }`}
                         >
                             ชำระแล้ว ({bills.filter(b => b.paid).length})

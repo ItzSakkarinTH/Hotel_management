@@ -12,6 +12,7 @@ interface UserData {
   firstName: string;
   lastName: string;
   email: string;
+  role?: string;
 }
 
 interface RoomInfo {
@@ -54,10 +55,18 @@ export default function UserDashboard() {
   useEffect(() => {
     const userData = localStorage.getItem('user');
     if (userData) {
-      setUser(JSON.parse(userData) as UserData);
+      const parsedUser = JSON.parse(userData) as UserData;
+
+      // Redirect admin/owner to admin dashboard
+      if (parsedUser.role === 'admin' || parsedUser.role === 'owner') {
+        router.push('/admin/dashboard');
+        return;
+      }
+
+      setUser(parsedUser);
     }
     fetchDashboardData();
-  }, []);
+  }, [router]);
 
   const fetchDashboardData = async () => {
     try {

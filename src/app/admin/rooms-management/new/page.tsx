@@ -13,6 +13,7 @@ export default function RoomsManagementPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingRoom, setEditingRoom] = useState<IRoom | null>(null);
+  const [images, setImages] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     roomNumber: '',
     price: '',
@@ -45,9 +46,33 @@ export default function RoomsManagementPage() {
     }
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const fileArray = Array.from(files);
+
+    fileArray.forEach((file) => {
+      if (file.size > 5 * 1024 * 1024) {
+        alert(`ไฟล์ ${file.name} มีขนาดใหญ่เกิน 5MB`);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImages((prev) => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const token = localStorage.getItem('token');
       const data = {
@@ -60,6 +85,7 @@ export default function RoomsManagementPage() {
         size: Number(formData.size),
         maxOccupants: Number(formData.maxOccupants),
         facilities: formData.facilities.split(',').map(f => f.trim()).filter(Boolean),
+        images: images,
       };
 
       if (editingRoom) {
@@ -77,8 +103,9 @@ export default function RoomsManagementPage() {
       setShowModal(false);
       resetForm();
       fetchRooms();
-    } catch (error: any) {
-      alert(error.response?.data?.error || 'เกิดข้อผิดพลาด');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } } };
+      alert(err.response?.data?.error || 'เกิดข้อผิดพลาด');
     }
   };
 
@@ -97,6 +124,7 @@ export default function RoomsManagementPage() {
       description: room.description || '',
       facilities: room.facilities.join(', '),
     });
+    setImages(room.images || []);
     setShowModal(true);
   };
 
@@ -110,13 +138,15 @@ export default function RoomsManagementPage() {
       });
       alert('ลบห้องพักสำเร็จ');
       fetchRooms();
-    } catch (error: any) {
-      alert(error.response?.data?.error || 'เกิดข้อผิดพลาด');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } } };
+      alert(err.response?.data?.error || 'เกิดข้อผิดพลาด');
     }
   };
 
   const resetForm = () => {
     setEditingRoom(null);
+    setImages([]);
     setFormData({
       roomNumber: '',
       price: '',
@@ -252,8 +282,53 @@ export default function RoomsManagementPage() {
               <h2 className={styles.modalTitle}>
                 {editingRoom ? 'แก้ไขห้องพัก' : 'เพิ่มห้องพัก'}
               </h2>
-              
+
               <form onSubmit={handleSubmit} className={styles.form}>
+                {/* Image Upload Section */}
+                <div className={styles.imageSection}>
+                  <label className={styles.label}>รูปภาพห้องพัก</label>
+                  <div className={styles.imageUpload}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageUpload}
+                      className={styles.fileInput}
+                      id="imageUpload"
+                    />
+                    <label htmlFor="imageUpload" className={styles.uploadButton}>
+                      📷 เลือกรูปภาพ
+                    </label>
+                    <p className={styles.uploadHint}>
+                      (สามารถเลือกหลายรูป ขนาดไม่เกิน 5MB/รูป)
+                    </p>
+                  </div>
+
+                  {/* Image Preview */}
+                  {images.length > 0 && (
+                    <div className={styles.imagePreview}>
+                      {images.map((img, index) => (
+                        <div key={index} className={styles.imageItem}>
+                          <Image
+                            src={img}
+                            alt={`รูปที่ ${index + 1}`}
+                            width={120}
+                            height={120}
+                            className={styles.previewImage}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveImage(index)}
+                            className={styles.removeImageBtn}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 <div className={styles.formGrid}>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>เลขห้อง *</label>

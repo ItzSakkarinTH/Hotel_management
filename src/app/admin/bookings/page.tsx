@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { PaymentStatus } from '@/types';
 import styles from './AdminBookingsPage.module.css';
 
 interface IUser {
@@ -20,6 +22,18 @@ interface IRoom {
   deposit: number;
 }
 
+interface IPayment {
+  _id: string;
+  bookingId: string | { _id?: string };
+  amount: number;
+  slipImage: string;
+  ocrData?: Record<string, unknown>;
+  status: string;
+  notes?: string;
+  createdAt: string;
+  verifiedAt?: string;
+}
+
 interface IBooking {
   _id: string;
   userId: IUser | null;
@@ -27,6 +41,7 @@ interface IBooking {
   checkInDate: string;
   status: 'pending' | 'confirmed' | 'cancelled';
   createdAt: string;
+  payment?: IPayment;
 }
 
 export default function AdminBookingsPage() {
@@ -36,11 +51,12 @@ export default function AdminBookingsPage() {
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'cancelled'>('all');
 
-  useEffect(() => {
-    fetchBookings();
-  }, []);
+  // Modal states
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<IBooking | null>(null);
+  const [verifyNotes, setVerifyNotes] = useState('');
 
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -48,12 +64,41 @@ export default function AdminBookingsPage() {
         return;
       }
 
-      const response = await axios.get('/api/bookings', {
+      // Fetch bookings
+      const bookingsResponse = await axios.get('/api/bookings', {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (response.data.success) {
-        setBookings(response.data.data);
+      if (bookingsResponse.data.success) {
+        const bookingsData: IBooking[] = bookingsResponse.data.data;
+
+        // Fetch payments for all bookings
+        const paymentsResponse = await axios.get('/api/payments', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (paymentsResponse.data.success) {
+          const payments: IPayment[] = paymentsResponse.data.data;
+
+          // Map payments to bookings
+          const bookingsWithPayments = bookingsData.map(booking => {
+            const payment = payments.find(p => {
+              const bookingIdStr = typeof p.bookingId === 'string'
+                ? p.bookingId
+                : p.bookingId?._id;
+              return bookingIdStr === booking._id;
+            });
+
+            return {
+              ...booking,
+              payment: payment || undefined
+            };
+          });
+
+          setBookings(bookingsWithPayments);
+        } else {
+          setBookings(bookingsData);
+        }
       }
     } catch (error: unknown) {
       const err = error as { response?: { data?: { error?: string } } };
@@ -61,7 +106,11 @@ export default function AdminBookingsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    fetchBookings();
+  }, [fetchBookings]);
 
   const handleStatusChange = async (bookingId: string, newStatus: 'confirmed' | 'cancelled') => {
     try {
@@ -73,13 +122,33 @@ export default function AdminBookingsPage() {
       );
 
       if (response.data.success) {
-        // Update local state
-        setBookings(bookings.map(booking =>
-          booking._id === bookingId
-            ? { ...booking, status: newStatus }
-            : booking
-        ));
+        fetchBookings(); // Refresh data
       }
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } } };
+      alert(err.response?.data?.error || 'เกิดข้อผิดพลาด');
+    }
+  };
+
+  const handleVerifyPayment = async (paymentId: string, status: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(
+        `/api/payments/${paymentId}/verify`,
+        {
+          status,
+          notes: verifyNotes,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      alert(status === PaymentStatus.VERIFIED ? 'อนุมัติการชำระเงินสำเร็จ' : 'ปฏิเสธการชำระเงินสำเร็จ');
+      setShowPaymentModal(false);
+      setSelectedBooking(null);
+      setVerifyNotes('');
+      fetchBookings(); // Refresh data
     } catch (error: unknown) {
       const err = error as { response?: { data?: { error?: string } } };
       alert(err.response?.data?.error || 'เกิดข้อผิดพลาด');
@@ -116,6 +185,28 @@ export default function AdminBookingsPage() {
     }
   };
 
+  const getPaymentStatusBadge = (status: string) => {
+    const badges = {
+      pending: styles.paymentPending,
+      verified: styles.paymentVerified,
+      rejected: styles.paymentRejected,
+    };
+    const labels = {
+      pending: 'รอตรวจสอบ',
+      verified: 'อนุมัติแล้ว',
+      rejected: 'ปฏิเสธ',
+    };
+
+    const badgeClass = badges[status as keyof typeof badges] || '';
+    const label = labels[status as keyof typeof labels] || status;
+
+    return (
+      <span className={`${styles.paymentBadge} ${badgeClass}`}>
+        {label}
+      </span>
+    );
+  };
+
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -127,7 +218,7 @@ export default function AdminBookingsPage() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1 className={styles.title}>จัดการการจอง</h1>
+        <h1 className={styles.title}>จัดการการจองและชำระเงิน</h1>
       </div>
 
       {error && (
@@ -174,13 +265,12 @@ export default function AdminBookingsPage() {
           <table className={styles.table}>
             <thead>
               <tr>
-                <th>รหัสการจอง</th>
+                <th>รหัส</th>
                 <th>ผู้จอง</th>
                 <th>เบอร์โทร</th>
                 <th>ห้อง</th>
                 <th>ราคา</th>
                 <th>วันเข้าพัก</th>
-                <th>วันที่จอง</th>
                 <th>สถานะ</th>
                 <th>จัดการ</th>
               </tr>
@@ -209,15 +299,34 @@ export default function AdminBookingsPage() {
                       : 'N/A'}
                   </td>
                   <td>{new Date(booking.checkInDate).toLocaleDateString('th-TH')}</td>
-                  <td>{new Date(booking.createdAt).toLocaleDateString('th-TH')}</td>
                   <td>
-                    <span className={`${styles.statusBadge} ${getStatusBadgeClass(booking.status)}`}>
-                      {getStatusText(booking.status)}
-                    </span>
+                    <div className={styles.statusCell}>
+                      <span className={`${styles.statusBadge} ${getStatusBadgeClass(booking.status)}`}>
+                        {getStatusText(booking.status)}
+                      </span>
+                      {booking.payment && (
+                        <div className={styles.paymentStatusSmall}>
+                          {getPaymentStatusBadge(booking.payment.status)}
+                        </div>
+                      )}
+                    </div>
                   </td>
                   <td>
                     <div className={styles.actionButtons}>
-                      {booking.status === 'pending' && (
+                      {/* ถ้ามี payment และรอตรวจสอบ แสดงปุ่มดูสลิป */}
+                      {booking.payment && booking.payment.status === 'pending' ? (
+                        <button
+                          onClick={() => {
+                            setSelectedBooking(booking);
+                            setShowPaymentModal(true);
+                          }}
+                          className={styles.viewSlipBtn}
+                          title="ดูสลิปและอนุมัติ"
+                        >
+                          ดูสลิป
+                        </button>
+                      ) : booking.status === 'pending' && !booking.payment ? (
+                        /* ถ้า pending และยังไม่มี payment แสดงปุ่มอนุมัติ/ยกเลิก */
                         <>
                           <button
                             onClick={() => handleStatusChange(booking._id, 'confirmed')}
@@ -234,8 +343,7 @@ export default function AdminBookingsPage() {
                             ✗
                           </button>
                         </>
-                      )}
-                      {booking.status !== 'pending' && (
+                      ) : (
                         <span className={styles.noAction}>-</span>
                       )}
                     </div>
@@ -246,6 +354,85 @@ export default function AdminBookingsPage() {
           </table>
         )}
       </div>
+
+      {/* Payment Verification Modal */}
+      {showPaymentModal && selectedBooking?.payment && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <h2 className={styles.modalTitle}>ตรวจสอบสลิปการช ำระเงิน</h2>
+
+            <div className={styles.modalBody}>
+              {/* Slip Image */}
+              <div className={styles.slipImageContainer}>
+                <Image
+                  src={selectedBooking.payment.slipImage}
+                  alt="สลิปการโอนเงิน"
+                  fill
+                  className={styles.slipImage}
+                />
+              </div>
+
+              {/* Booking Details */}
+              <div className={styles.modalInfoSection}>
+                <p><strong>ผู้จอง:</strong> {selectedBooking.userId?.firstName} {selectedBooking.userId?.lastName}</p>
+                <p><strong>ห้อง:</strong> {selectedBooking.roomId?.roomNumber}</p>
+                <p><strong>จำนวนเงิน:</strong> {selectedBooking.payment.amount.toLocaleString()} บาท</p>
+                <p><strong>วันที่ส่งสลิป:</strong> {new Date(selectedBooking.payment.createdAt).toLocaleString('th-TH')}</p>
+              </div>
+
+              {/* OCR Data */}
+              {selectedBooking.payment.ocrData && (
+                <div className={styles.ocrDataBox}>
+                  <p className={styles.ocrDataTitle}>ข้อมูลจาก OCR/QR:</p>
+                  <pre className={styles.ocrDataContent}>
+                    {JSON.stringify(selectedBooking.payment.ocrData, null, 2)}
+                  </pre>
+                </div>
+              )}
+
+              {/* Notes Input */}
+              <div className={styles.notesInputSection}>
+                <label className={styles.notesInputLabel}>
+                  หมายเหตุ (ถ้ามี)
+                </label>
+                <textarea
+                  rows={3}
+                  value={verifyNotes}
+                  onChange={(e) => setVerifyNotes(e.target.value)}
+                  placeholder="เช่น ตรวจสอบแล้วถูกต้อง, จำนวนเงินไม่ตรงกัน..."
+                  className={styles.notesTextarea}
+                />
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className={styles.modalActions}>
+              <button
+                onClick={() => {
+                  setShowPaymentModal(false);
+                  setSelectedBooking(null);
+                  setVerifyNotes('');
+                }}
+                className={styles.cancelButton}
+              >
+                ยกเลิก
+              </button>
+              <button
+                onClick={() => handleVerifyPayment(selectedBooking.payment!._id, PaymentStatus.REJECTED)}
+                className={styles.rejectButton}
+              >
+                ปฏิเสธ
+              </button>
+              <button
+                onClick={() => handleVerifyPayment(selectedBooking.payment!._id, PaymentStatus.VERIFIED)}
+                className={styles.approveButton}
+              >
+                อนุมัติ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

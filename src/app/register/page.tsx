@@ -8,7 +8,6 @@ import { AxiosErrorResponse } from '@/types';
 import styles from './register.module.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import BackButton from '@/components/BackButton';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -67,9 +66,6 @@ export default function RegisterPage() {
       <Navbar isLoggedIn={false} />
       <div className={styles.container}>
         <div className={styles.wrapper}>
-          <div style={{ marginBottom: '1rem' }}>
-            <BackButton />
-          </div>
           <div className={styles.header}>
             <h2 className={styles.title}>
               ลงทะเบียนสมาชิก

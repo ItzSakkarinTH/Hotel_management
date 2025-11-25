@@ -8,7 +8,6 @@ import Image from 'next/image';
 import styles from './rooms.module.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import BackButton from '@/components/BackButton';
 
 export default function RoomsPage() {
   const router = useRouter();
@@ -79,9 +78,6 @@ export default function RoomsPage() {
       <Navbar isLoggedIn={isLoggedIn} />
       <div className={styles.container}>
         <div className={styles.wrapper}>
-          <div style={{ marginBottom: '1rem' }}>
-            <BackButton />
-          </div>
           <div className={styles.header}>
             <h1 className={styles.title}>รายการห้องพัก</h1>
 

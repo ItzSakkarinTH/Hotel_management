@@ -66,7 +66,7 @@ export default function Navbar({ isLoggedIn = false, isAdmin = false }: NavbarPr
                   <Link href="/rooms" className={styles.navLink}>
                     ห้องพัก
                   </Link>
-                  <Link href="/my-bookings" className={styles.navLink}>
+                  <Link href="/booking-history" className={styles.navLink}>
                     การจองของฉัน
                   </Link>
                 </>
@@ -130,7 +130,7 @@ export default function Navbar({ isLoggedIn = false, isAdmin = false }: NavbarPr
                   <Link href="/rooms" className={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>
                     ห้องพัก
                   </Link>
-                  <Link href="/my-bookings" className={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>
+                  <Link href="/booking-history" className={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>
                     การจองของฉัน
                   </Link>
                 </>

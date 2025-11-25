@@ -15,6 +15,7 @@ interface DashboardStats {
   occupiedRooms: number;
   pendingPayments: number;
   totalRevenue: number;
+  activeBookings: number;
 }
 
 // Types for API responses

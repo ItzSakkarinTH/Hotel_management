@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import axios from 'axios';
 import Image from 'next/image';
-import { IRoom, OCRData, AxiosErrorResponse } from '@/types';
+import { IRoom, OCRData, AxiosErrorResponse, SlipData } from '@/types';
 import styles from './Booking.module.css';
+import SlipReaderIntegrated from '@/components/SlipReader';
 
 export default function BookingPage() {
   const router = useRouter();
@@ -16,7 +17,7 @@ export default function BookingPage() {
   const [loading, setLoading] = useState(true);
   const [checkInDate, setCheckInDate] = useState('');
   const [slipImage, setSlipImage] = useState<string>('');
-  const [slipFile, setSlipFile] = useState<File | null>(null);
+
   const [ocrData, setOcrData] = useState<OCRData | null>(null);
   const [step, setStep] = useState(1);
   const [bookingId, setBookingId] = useState<string>('');
@@ -74,22 +75,7 @@ export default function BookingPage() {
     }
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
 
-    setSlipFile(file);
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setSlipImage(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-
-    // TODO: เรียก OCR API ของคุณที่นี่
-    // const ocrResult = await callOCRApi(file);
-    // setOcrData(ocrResult);
-  };
 
   const handlePaymentSubmit = async () => {
     if (!slipImage) {
@@ -303,50 +289,15 @@ export default function BookingPage() {
               </div>
 
               <div className={styles.uploadContainer}>
-                <label className={styles.label}>
-                  อัพโหลดสลิปการโอนเงิน
-                </label>
-                <div className={styles.uploadBox}>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className={styles.uploadInput}
-                    id="slip-upload"
-                  />
-                  <label
-                    htmlFor="slip-upload"
-                    className={styles.uploadLabel}
-                  >
-                    {slipImage ? (
-                      <div className={styles.uploadImageContainer}>
-                        <Image
-                          src={slipImage}
-                          alt="สลิปการโอนเงิน"
-                          fill
-                          className={styles.uploadImage}
-                        />
-                      </div>
-                    ) : (
-                      <>
-                        <svg
-                          className={styles.uploadIcon}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 4v16m8-8H4"
-                          />
-                        </svg>
-                        <span className={styles.uploadText}>คลิกเพื่ออัพโหลดไฟล์</span>
-                      </>
-                    )}
-                  </label>
-                </div>
+                <SlipReaderIntegrated
+                  expectedAmount={room.price + room.deposit}
+                  onSlipVerified={(data: SlipData) => {
+                    setSlipImage(data.slipImage);
+                    setOcrData(data.ocrData);
+                    setError('');
+                  }}
+                  onError={(err: string) => setError(err)}
+                />
               </div>
 
               {ocrData && (

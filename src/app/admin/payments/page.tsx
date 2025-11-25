@@ -16,7 +16,7 @@ interface UserInfo {
   lastName: string;
 }
 
-interface PaymentWithDetails extends IPayment {
+interface PaymentWithDetails extends Omit<IPayment, 'bookingId' | 'userId'> {
   bookingId: BookingInfo;
   userId: UserInfo;
 }
@@ -110,8 +110,8 @@ export default function AdminPaymentsPage() {
           <button
             onClick={() => setFilter('all')}
             className={`px-4 py-2 rounded-lg ${filter === 'all'
-                ? 'bg-indigo-600 text-white'
-                : 'bg-white text-gray-700 border border-gray-300'
+              ? 'bg-indigo-600 text-white'
+              : 'bg-white text-gray-700 border border-gray-300'
               }`}
           >
             ทั้งหมด ({payments.length})
@@ -119,8 +119,8 @@ export default function AdminPaymentsPage() {
           <button
             onClick={() => setFilter(PaymentStatus.PENDING)}
             className={`px-4 py-2 rounded-lg ${filter === PaymentStatus.PENDING
-                ? 'bg-yellow-600 text-white'
-                : 'bg-white text-gray-700 border border-gray-300'
+              ? 'bg-yellow-600 text-white'
+              : 'bg-white text-gray-700 border border-gray-300'
               }`}
           >
             รอตรวจสอบ ({payments.filter(p => p.status === PaymentStatus.PENDING).length})
@@ -128,8 +128,8 @@ export default function AdminPaymentsPage() {
           <button
             onClick={() => setFilter(PaymentStatus.VERIFIED)}
             className={`px-4 py-2 rounded-lg ${filter === PaymentStatus.VERIFIED
-                ? 'bg-green-600 text-white'
-                : 'bg-white text-gray-700 border border-gray-300'
+              ? 'bg-green-600 text-white'
+              : 'bg-white text-gray-700 border border-gray-300'
               }`}
           >
             อนุมัติแล้ว ({payments.filter(p => p.status === PaymentStatus.VERIFIED).length})
@@ -137,8 +137,8 @@ export default function AdminPaymentsPage() {
           <button
             onClick={() => setFilter(PaymentStatus.REJECTED)}
             className={`px-4 py-2 rounded-lg ${filter === PaymentStatus.REJECTED
-                ? 'bg-red-600 text-white'
-                : 'bg-white text-gray-700 border border-gray-300'
+              ? 'bg-red-600 text-white'
+              : 'bg-white text-gray-700 border border-gray-300'
               }`}
           >
             ปฏิเสธ ({payments.filter(p => p.status === PaymentStatus.REJECTED).length})

@@ -37,7 +37,7 @@ export interface IRoom {
   electricityRate: number;
   facilities: string[];
   floor: number;
-  size: number; // ตารางเมตร
+  size: number;
   maxOccupants: number;
   description?: string;
   createdAt: Date;

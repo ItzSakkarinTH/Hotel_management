@@ -25,7 +25,7 @@ export default function Navbar({ isLoggedIn = false, isAdmin = false }: NavbarPr
       <div className={styles.container}>
         {/* Logo */}
         <Link href="/" className={styles.logo}>
-          <span className={styles.logoIcon}>🎂</span>
+          <span className={styles.logoIcon}>🏨</span>
           <span className={styles.logoText}>Hotel Management</span>
         </Link>
 
@@ -50,7 +50,7 @@ export default function Navbar({ isLoggedIn = false, isAdmin = false }: NavbarPr
               </Link>
               {isAdmin && (
                 <>
-                  <Link href="/admin/rooms" className={styles.navLink}>
+                  <Link href="/admin/rooms-management" className={styles.navLink}>
                     จัดการห้อง
                   </Link>
                   <Link href="/admin/bookings" className={styles.navLink}>
@@ -114,7 +114,7 @@ export default function Navbar({ isLoggedIn = false, isAdmin = false }: NavbarPr
               </Link>
               {isAdmin && (
                 <>
-                  <Link href="/admin/rooms" className={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>
+                  <Link href="/admin/rooms-management" className={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>
                     จัดการห้อง
                   </Link>
                   <Link href="/admin/bookings" className={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>

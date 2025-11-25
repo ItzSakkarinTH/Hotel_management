@@ -6,6 +6,9 @@ import axios from 'axios';
 import { IRoom, RoomStatus } from '@/types';
 import Image from 'next/image';
 import styles from './new/RoomsManagement.module.css';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import BackButton from '@/components/BackButton';
 
 export default function RoomsManagementPage() {
   const router = useRouter();
@@ -192,280 +195,287 @@ export default function RoomsManagementPage() {
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.content}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>จัดการห้องพัก</h1>
-          <button
-            onClick={() => {
-              resetForm();
-              setShowModal(true);
-            }}
-            className={styles.addButton}
-          >
-            + เพิ่มห้องพัก
-          </button>
-        </div>
+    <>
+      <Navbar isLoggedIn={true} isAdmin={true} />
+      <div className={styles.container}>
+        <div className={styles.content}>
+          <div style={{ marginBottom: '1rem' }}>
+            <BackButton />
+          </div>
+          <div className={styles.header}>
+            <h1 className={styles.title}>จัดการห้องพัก</h1>
+            <button
+              onClick={() => {
+                resetForm();
+                setShowModal(true);
+              }}
+              className={styles.addButton}
+            >
+              + เพิ่มห้องพัก
+            </button>
+          </div>
 
-        {/* Rooms Table */}
-        <div className={styles.tableContainer}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>ห้อง</th>
-                <th>ราคา</th>
-                <th>ชั้น</th>
-                <th>ขนาด</th>
-                <th>สถานะ</th>
-                <th className={styles.actionHeader}>จัดการ</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rooms.map((room) => (
-                <tr key={room._id}>
-                  <td>
-                    <div className={styles.roomNumber}>{room.roomNumber}</div>
-                  </td>
-                  <td>
-                    <div className={styles.price}>{room.price.toLocaleString()} ฿</div>
-                  </td>
-                  <td>
-                    <div className={styles.floor}>ชั้น {room.floor}</div>
-                  </td>
-                  <td>
-                    <div className={styles.size}>{room.size} ตร.ม.</div>
-                  </td>
-                  <td>
-                    <span className={`${styles.statusBadge} ${getStatusClass(room.status)}`}>
-                      {getStatusText(room.status)}
-                    </span>
-                  </td>
-                  <td className={styles.actionCell}>
-                    <button
-                      onClick={() => handleEdit(room)}
-                      className={styles.editButton}
-                    >
-                      แก้ไข
-                    </button>
-                    <button
-                      onClick={() => handleDelete(room._id)}
-                      className={styles.deleteButton}
-                    >
-                      ลบ
-                    </button>
-                  </td>
+          {/* Rooms Table */}
+          <div className={styles.tableContainer}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>ห้อง</th>
+                  <th>ราคา</th>
+                  <th>ชั้น</th>
+                  <th>ขนาด</th>
+                  <th>สถานะ</th>
+                  <th className={styles.actionHeader}>จัดการ</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {rooms.map((room) => (
+                  <tr key={room._id}>
+                    <td>
+                      <div className={styles.roomNumber}>{room.roomNumber}</div>
+                    </td>
+                    <td>
+                      <div className={styles.price}>{room.price.toLocaleString()} ฿</div>
+                    </td>
+                    <td>
+                      <div className={styles.floor}>ชั้น {room.floor}</div>
+                    </td>
+                    <td>
+                      <div className={styles.size}>{room.size} ตร.ม.</div>
+                    </td>
+                    <td>
+                      <span className={`${styles.statusBadge} ${getStatusClass(room.status)}`}>
+                        {getStatusText(room.status)}
+                      </span>
+                    </td>
+                    <td className={styles.actionCell}>
+                      <button
+                        onClick={() => handleEdit(room)}
+                        className={styles.editButton}
+                      >
+                        แก้ไข
+                      </button>
+                      <button
+                        onClick={() => handleDelete(room._id)}
+                        className={styles.deleteButton}
+                      >
+                        ลบ
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
-          {rooms.length === 0 && (
-            <div className={styles.emptyState}>
-              <p>ยังไม่มีห้องพักในระบบ</p>
-              <button
-                onClick={() => {
-                  resetForm();
-                  setShowModal(true);
-                }}
-                className={styles.addButtonEmpty}
-              >
-                เพิ่มห้องพักแรก
-              </button>
+            {rooms.length === 0 && (
+              <div className={styles.emptyState}>
+                <p>ยังไม่มีห้องพักในระบบ</p>
+                <button
+                  onClick={() => {
+                    resetForm();
+                    setShowModal(true);
+                  }}
+                  className={styles.addButtonEmpty}
+                >
+                  เพิ่มห้องพักแรก
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Modal */}
+          {showModal && (
+            <div className={styles.modalOverlay}>
+              <div className={styles.modal}>
+                <h2 className={styles.modalTitle}>
+                  {editingRoom ? 'แก้ไขห้องพัก' : 'เพิ่มห้องพัก'}
+                </h2>
+
+                <form onSubmit={handleSubmit} className={styles.form}>
+                  {/* Image Upload Section */}
+                  <div className={styles.imageSection}>
+                    <label className={styles.label}>รูปภาพห้องพัก</label>
+                    <div className={styles.imageUpload}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleImageUpload}
+                        className={styles.fileInput}
+                        id="imageUpload"
+                      />
+                      <label htmlFor="imageUpload" className={styles.uploadButton}>
+                        📷 เลือกรูปภาพ
+                      </label>
+                      <p className={styles.uploadHint}>
+                        (สามารถเลือกหลายรูป ขนาดไม่เกิน 5MB/รูป)
+                      </p>
+                    </div>
+
+                    {/* Image Preview */}
+                    {images.length > 0 && (
+                      <div className={styles.imagePreview}>
+                        {images.map((img, index) => (
+                          <div key={index} className={styles.imageItem}>
+                            <Image
+                              src={img}
+                              alt={`รูปที่ ${index + 1}`}
+                              width={120}
+                              height={120}
+                              className={styles.previewImage}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveImage(index)}
+                              className={styles.removeImageBtn}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className={styles.formGrid}>
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>เลขห้อง *</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.roomNumber}
+                        onChange={(e) => setFormData({ ...formData, roomNumber: e.target.value })}
+                        className={styles.input}
+                      />
+                    </div>
+
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>สถานะ</label>
+                      <select
+                        value={formData.status}
+                        onChange={(e) => setFormData({ ...formData, status: e.target.value as RoomStatus })}
+                        className={styles.select}
+                      >
+                        <option value={RoomStatus.AVAILABLE}>ว่าง</option>
+                        <option value={RoomStatus.OCCUPIED}>เต็ม</option>
+                        <option value={RoomStatus.RESERVED}>จองแล้ว</option>
+                        <option value={RoomStatus.MAINTENANCE}>ปิดปรับปรุง</option>
+                      </select>
+                    </div>
+
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>ราคา/เดือน (บาท) *</label>
+                      <input
+                        type="number"
+                        required
+                        value={formData.price}
+                        onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                        className={styles.input}
+                      />
+                    </div>
+
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>เงินประกัน (บาท) *</label>
+                      <input
+                        type="number"
+                        required
+                        value={formData.deposit}
+                        onChange={(e) => setFormData({ ...formData, deposit: e.target.value })}
+                        className={styles.input}
+                      />
+                    </div>
+
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>ค่าน้ำ (บาท/หน่วย)</label>
+                      <input
+                        type="number"
+                        value={formData.waterRate}
+                        onChange={(e) => setFormData({ ...formData, waterRate: e.target.value })}
+                        className={styles.input}
+                      />
+                    </div>
+
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>ค่าไฟ (บาท/หน่วย)</label>
+                      <input
+                        type="number"
+                        value={formData.electricityRate}
+                        onChange={(e) => setFormData({ ...formData, electricityRate: e.target.value })}
+                        className={styles.input}
+                      />
+                    </div>
+
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>ชั้น *</label>
+                      <input
+                        type="number"
+                        required
+                        value={formData.floor}
+                        onChange={(e) => setFormData({ ...formData, floor: e.target.value })}
+                        className={styles.input}
+                      />
+                    </div>
+
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>ขนาด (ตร.ม.) *</label>
+                      <input
+                        type="number"
+                        required
+                        value={formData.size}
+                        onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+                        className={styles.input}
+                      />
+                    </div>
+                  </div>
+
+                  <div className={styles.formGroupFull}>
+                    <label className={styles.label}>
+                      สิ่งอำนวยความสะดวก (คั่นด้วยเครื่องหมายจุลภาค)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="เตียง, ตู้เสื้อผ้า, แอร์"
+                      value={formData.facilities}
+                      onChange={(e) => setFormData({ ...formData, facilities: e.target.value })}
+                      className={styles.input}
+                    />
+                  </div>
+
+                  <div className={styles.formGroupFull}>
+                    <label className={styles.label}>รายละเอียดเพิ่มเติม</label>
+                    <textarea
+                      rows={3}
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      className={styles.textarea}
+                    />
+                  </div>
+
+                  <div className={styles.modalActions}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowModal(false);
+                        resetForm();
+                      }}
+                      className={styles.cancelButton}
+                    >
+                      ยกเลิก
+                    </button>
+                    <button
+                      type="submit"
+                      className={styles.submitButton}
+                    >
+                      บันทึก
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           )}
         </div>
-
-        {/* Modal */}
-        {showModal && (
-          <div className={styles.modalOverlay}>
-            <div className={styles.modal}>
-              <h2 className={styles.modalTitle}>
-                {editingRoom ? 'แก้ไขห้องพัก' : 'เพิ่มห้องพัก'}
-              </h2>
-
-              <form onSubmit={handleSubmit} className={styles.form}>
-                {/* Image Upload Section */}
-                <div className={styles.imageSection}>
-                  <label className={styles.label}>รูปภาพห้องพัก</label>
-                  <div className={styles.imageUpload}>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleImageUpload}
-                      className={styles.fileInput}
-                      id="imageUpload"
-                    />
-                    <label htmlFor="imageUpload" className={styles.uploadButton}>
-                      📷 เลือกรูปภาพ
-                    </label>
-                    <p className={styles.uploadHint}>
-                      (สามารถเลือกหลายรูป ขนาดไม่เกิน 5MB/รูป)
-                    </p>
-                  </div>
-
-                  {/* Image Preview */}
-                  {images.length > 0 && (
-                    <div className={styles.imagePreview}>
-                      {images.map((img, index) => (
-                        <div key={index} className={styles.imageItem}>
-                          <Image
-                            src={img}
-                            alt={`รูปที่ ${index + 1}`}
-                            width={120}
-                            height={120}
-                            className={styles.previewImage}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveImage(index)}
-                            className={styles.removeImageBtn}
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className={styles.formGrid}>
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>เลขห้อง *</label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.roomNumber}
-                      onChange={(e) => setFormData({ ...formData, roomNumber: e.target.value })}
-                      className={styles.input}
-                    />
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>สถานะ</label>
-                    <select
-                      value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value as RoomStatus })}
-                      className={styles.select}
-                    >
-                      <option value={RoomStatus.AVAILABLE}>ว่าง</option>
-                      <option value={RoomStatus.OCCUPIED}>เต็ม</option>
-                      <option value={RoomStatus.RESERVED}>จองแล้ว</option>
-                      <option value={RoomStatus.MAINTENANCE}>ปิดปรับปรุง</option>
-                    </select>
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>ราคา/เดือน (บาท) *</label>
-                    <input
-                      type="number"
-                      required
-                      value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                      className={styles.input}
-                    />
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>เงินประกัน (บาท) *</label>
-                    <input
-                      type="number"
-                      required
-                      value={formData.deposit}
-                      onChange={(e) => setFormData({ ...formData, deposit: e.target.value })}
-                      className={styles.input}
-                    />
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>ค่าน้ำ (บาท/หน่วย)</label>
-                    <input
-                      type="number"
-                      value={formData.waterRate}
-                      onChange={(e) => setFormData({ ...formData, waterRate: e.target.value })}
-                      className={styles.input}
-                    />
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>ค่าไฟ (บาท/หน่วย)</label>
-                    <input
-                      type="number"
-                      value={formData.electricityRate}
-                      onChange={(e) => setFormData({ ...formData, electricityRate: e.target.value })}
-                      className={styles.input}
-                    />
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>ชั้น *</label>
-                    <input
-                      type="number"
-                      required
-                      value={formData.floor}
-                      onChange={(e) => setFormData({ ...formData, floor: e.target.value })}
-                      className={styles.input}
-                    />
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>ขนาด (ตร.ม.) *</label>
-                    <input
-                      type="number"
-                      required
-                      value={formData.size}
-                      onChange={(e) => setFormData({ ...formData, size: e.target.value })}
-                      className={styles.input}
-                    />
-                  </div>
-                </div>
-
-                <div className={styles.formGroupFull}>
-                  <label className={styles.label}>
-                    สิ่งอำนวยความสะดวก (คั่นด้วยเครื่องหมายจุลภาค)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="เตียง, ตู้เสื้อผ้า, แอร์"
-                    value={formData.facilities}
-                    onChange={(e) => setFormData({ ...formData, facilities: e.target.value })}
-                    className={styles.input}
-                  />
-                </div>
-
-                <div className={styles.formGroupFull}>
-                  <label className={styles.label}>รายละเอียดเพิ่มเติม</label>
-                  <textarea
-                    rows={3}
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className={styles.textarea}
-                  />
-                </div>
-
-                <div className={styles.modalActions}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowModal(false);
-                      resetForm();
-                    }}
-                    className={styles.cancelButton}
-                  >
-                    ยกเลิก
-                  </button>
-                  <button
-                    type="submit"
-                    className={styles.submitButton}
-                  >
-                    บันทึก
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
       </div>
-    </div>
+      <Footer />
+    </>
   );
 }

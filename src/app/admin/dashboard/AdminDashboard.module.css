@@ -13,12 +13,15 @@
 
 .loadingText {
   font-size: 1.25rem;
+  color: #fcae1e;
+  font-weight: 600;
 }
 
 /* Header */
 .header {
   background-color: white;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .headerContent {
@@ -37,8 +40,12 @@
 
 .headerTitle {
   font-size: 1.875rem;
-  font-weight: bold;
+  font-weight: 800;
   color: #111827;
+  background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .headerButtons {
@@ -48,34 +55,40 @@
 }
 
 .btnPrimary {
-  padding: 0.5rem 1rem;
-  background-color: #4f46e5;
+  padding: 0.5rem 1.25rem;
+  background-color: #fcae1e;
   color: white;
   border-radius: 0.5rem;
-  font-weight: 500;
+  font-weight: 600;
   text-decoration: none;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
   border: none;
   cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .btnPrimary:hover {
-  background-color: #4338ca;
+  background-color: #fd9002;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .btnDanger {
-  padding: 0.5rem 1rem;
-  background-color: #dc2626;
+  padding: 0.5rem 1.25rem;
+  background-color: #ef4444;
   color: white;
   border-radius: 0.5rem;
-  font-weight: 500;
+  font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .btnDanger:hover {
-  background-color: #b91c1c;
+  background-color: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 /* Content */
@@ -99,28 +112,34 @@
 
 .statCard {
   background-color: white;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
   cursor: pointer;
-  transition: box-shadow 0.2s;
+  transition: all 0.2s;
   border-left: 4px solid;
+  border-top: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .statCard:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 .statTitle {
   color: #6b7280;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .statValue {
   font-size: 1.875rem;
-  font-weight: bold;
+  font-weight: 800;
   color: #111827;
 }
 
@@ -138,7 +157,7 @@
 }
 
 .borderYellow {
-  border-left-color: #eab308;
+  border-left-color: #f59e0b;
 }
 
 .borderPurple {
@@ -146,28 +165,31 @@
 }
 
 .borderEmerald {
-  border-left-color: #10b981;
+  border-left-color: #059669;
 }
 
 /* Quick Actions */
 .quickActionsCard {
   background-color: white;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
+  border: 1px solid #e5e7eb;
 }
 
 .quickActionsTitle {
   font-size: 1.25rem;
-  font-weight: bold;
+  font-weight: 700;
   color: #111827;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #f3f4f6;
 }
 
 .quickActionsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .actionIndigo,
@@ -180,16 +202,20 @@
   padding: 1rem;
   border-radius: 0.5rem;
   text-decoration: none;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  font-weight: 600;
+  border: 1px solid transparent;
 }
 
 .actionIndigo {
-  background-color: #eef2ff;
-  color: #4338ca;
+  background-color: #fffbeb;
+  color: #92400e;
 }
 
 .actionIndigo:hover {
-  background-color: #e0e7ff;
+  background-color: #fef3c7;
+  border-color: #fcd34d;
+  transform: translateY(-2px);
 }
 
 .actionGreen {
@@ -199,6 +225,8 @@
 
 .actionGreen:hover {
   background-color: #dcfce7;
+  border-color: #86efac;
+  transform: translateY(-2px);
 }
 
 .actionPurple {
@@ -208,6 +236,8 @@
 
 .actionPurple:hover {
   background-color: #f3e8ff;
+  border-color: #d8b4fe;
+  transform: translateY(-2px);
 }
 
 .actionOrange {
@@ -217,10 +247,12 @@
 
 .actionOrange:hover {
   background-color: #ffedd5;
+  border-color: #fdba74;
+  transform: translateY(-2px);
 }
 
 .actionText {
-  font-weight: 500;
+  font-weight: 600;
 }
 
 /* Responsive */
@@ -241,6 +273,7 @@
   .btnPrimary,
   .btnDanger {
     flex: 1;
+    text-align: center;
   }
 
   .statsGrid {

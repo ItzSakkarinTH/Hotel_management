@@ -7,7 +7,7 @@ import Link from 'next/link';
 import styles from './AdminDashboard.module.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import BackButton from '@/components/BackButton';
+
 
 interface DashboardStats {
   totalRooms: number;
@@ -15,7 +15,6 @@ interface DashboardStats {
   occupiedRooms: number;
   pendingPayments: number;
   totalRevenue: number;
-  activeBookings: number;
 }
 
 // Types for API responses
@@ -147,12 +146,6 @@ export default function AdminDashboard() {
               value={stats.occupiedRooms}
               color="borderRed"
               link="/admin/rooms-management?status=occupied"
-            />
-            <StatCard
-              title="การจองที่รอดำเนินการ"
-              value={stats.activeBookings}
-              color="borderYellow"
-              link="/admin/bookings"
             />
             <StatCard
               title="สลิปรอตรวจสอบ"

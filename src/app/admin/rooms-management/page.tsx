@@ -8,7 +8,7 @@ import Image from 'next/image';
 import styles from './new/RoomsManagement.module.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import BackButton from '@/components/BackButton';
+
 
 export default function RoomsManagementPage() {
   const router = useRouter();

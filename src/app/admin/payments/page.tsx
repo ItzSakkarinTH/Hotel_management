@@ -3,11 +3,22 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Image from 'next/image';
-import { IPayment, PaymentStatus } from '@/types';
+import { IPayment, PaymentStatus, AxiosErrorResponse } from '@/types';
+
+interface BookingInfo {
+  _id: string;
+  roomId: { roomNumber: string };
+}
+
+interface UserInfo {
+  _id: string;
+  firstName: string;
+  lastName: string;
+}
 
 interface PaymentWithDetails extends IPayment {
-  bookingId: any;
-  userId: any;
+  bookingId: BookingInfo;
+  userId: UserInfo;
 }
 
 export default function AdminPaymentsPage() {
@@ -49,14 +60,15 @@ export default function AdminPaymentsPage() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      
+
       alert(status === PaymentStatus.VERIFIED ? 'อนุมัติการชำระเงินสำเร็จ' : 'ปฏิเสธการชำระเงินสำเร็จ');
       setShowModal(false);
       setSelectedPayment(null);
       setVerifyNotes('');
       fetchPayments();
-    } catch (error: any) {
-      alert(error.response?.data?.error || 'เกิดข้อผิดพลาด');
+    } catch (error: unknown) {
+      const err = error as AxiosErrorResponse;
+      alert(err.response?.data?.error || 'เกิดข้อผิดพลาด');
     }
   };
 
@@ -66,7 +78,7 @@ export default function AdminPaymentsPage() {
       [PaymentStatus.VERIFIED]: 'bg-green-100 text-green-800',
       [PaymentStatus.REJECTED]: 'bg-red-100 text-red-800',
     };
-    
+
     const labels = {
       [PaymentStatus.PENDING]: 'รอตรวจสอบ',
       [PaymentStatus.VERIFIED]: 'อนุมัติแล้ว',
@@ -80,8 +92,8 @@ export default function AdminPaymentsPage() {
     );
   };
 
-  const filteredPayments = filter === 'all' 
-    ? payments 
+  const filteredPayments = filter === 'all'
+    ? payments
     : payments.filter(p => p.status === filter);
 
   if (loading) {
@@ -97,41 +109,37 @@ export default function AdminPaymentsPage() {
         <div className="mb-6 flex gap-2 flex-wrap">
           <button
             onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-lg ${
-              filter === 'all' 
-                ? 'bg-indigo-600 text-white' 
+            className={`px-4 py-2 rounded-lg ${filter === 'all'
+                ? 'bg-indigo-600 text-white'
                 : 'bg-white text-gray-700 border border-gray-300'
-            }`}
+              }`}
           >
             ทั้งหมด ({payments.length})
           </button>
           <button
             onClick={() => setFilter(PaymentStatus.PENDING)}
-            className={`px-4 py-2 rounded-lg ${
-              filter === PaymentStatus.PENDING 
-                ? 'bg-yellow-600 text-white' 
+            className={`px-4 py-2 rounded-lg ${filter === PaymentStatus.PENDING
+                ? 'bg-yellow-600 text-white'
                 : 'bg-white text-gray-700 border border-gray-300'
-            }`}
+              }`}
           >
             รอตรวจสอบ ({payments.filter(p => p.status === PaymentStatus.PENDING).length})
           </button>
           <button
             onClick={() => setFilter(PaymentStatus.VERIFIED)}
-            className={`px-4 py-2 rounded-lg ${
-              filter === PaymentStatus.VERIFIED 
-                ? 'bg-green-600 text-white' 
+            className={`px-4 py-2 rounded-lg ${filter === PaymentStatus.VERIFIED
+                ? 'bg-green-600 text-white'
                 : 'bg-white text-gray-700 border border-gray-300'
-            }`}
+              }`}
           >
             อนุมัติแล้ว ({payments.filter(p => p.status === PaymentStatus.VERIFIED).length})
           </button>
           <button
             onClick={() => setFilter(PaymentStatus.REJECTED)}
-            className={`px-4 py-2 rounded-lg ${
-              filter === PaymentStatus.REJECTED 
-                ? 'bg-red-600 text-white' 
+            className={`px-4 py-2 rounded-lg ${filter === PaymentStatus.REJECTED
+                ? 'bg-red-600 text-white'
                 : 'bg-white text-gray-700 border border-gray-300'
-            }`}
+              }`}
           >
             ปฏิเสธ ({payments.filter(p => p.status === PaymentStatus.REJECTED).length})
           </button>

@@ -5,22 +5,56 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Link from 'next/link';
 import styles from './UserDashboard.module.css';
+import { IAnnouncement } from '@/types';
+
+interface UserData {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
+interface RoomInfo {
+  _id: string;
+  roomNumber: string;
+  price: number;
+}
+
+interface BookingData {
+  _id: string;
+  status: string;
+  roomId: RoomInfo;
+  checkInDate: string;
+}
+
+interface UtilityBill {
+  _id: string;
+  paid: boolean;
+  totalCost: number;
+}
+
+interface DashboardStats {
+  currentBooking: BookingData | null;
+  unpaidBills: number;
+  totalUnpaid: number;
+  announcements: IAnnouncement[];
+}
 
 export default function UserDashboard() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
-  const [stats, setStats] = useState({
-    currentBooking: null as any,
+  const [user, setUser] = useState<UserData | null>(null);
+  const [stats, setStats] = useState<DashboardStats>({
+    currentBooking: null,
     unpaidBills: 0,
     totalUnpaid: 0,
-    announcements: [] as any[],
+    announcements: [],
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
     if (userData) {
-      setUser(JSON.parse(userData));
+      setUser(JSON.parse(userData) as UserData);
     }
     fetchDashboardData();
   }, []);
@@ -28,7 +62,7 @@ export default function UserDashboard() {
   const fetchDashboardData = async () => {
     try {
       const token = localStorage.getItem('token');
-      
+
       const [bookingsRes, utilitiesRes, announcementsRes] = await Promise.all([
         axios.get('/api/bookings', {
           headers: { Authorization: `Bearer ${token}` },
@@ -41,22 +75,22 @@ export default function UserDashboard() {
         }),
       ]);
 
-      const bookings = bookingsRes.data.data;
-      const utilities = utilitiesRes.data.data;
-      const announcements = announcementsRes.data.data;
+      const bookings = bookingsRes.data.data as BookingData[];
+      const utilities = utilitiesRes.data.data as UtilityBill[];
+      const announcements = announcementsRes.data.data as IAnnouncement[];
 
       const currentBooking = bookings.find(
-        (b: any) => b.status === 'confirmed' || b.status === 'pending'
+        (b: BookingData) => b.status === 'confirmed' || b.status === 'pending'
       );
 
-      const unpaidBills = utilities.filter((u: any) => !u.paid);
+      const unpaidBills = utilities.filter((u: UtilityBill) => !u.paid);
       const totalUnpaid = unpaidBills.reduce(
-        (sum: number, bill: any) => sum + bill.totalCost,
+        (sum: number, bill: UtilityBill) => sum + bill.totalCost,
         0
       );
 
       setStats({
-        currentBooking,
+        currentBooking: currentBooking || null,
         unpaidBills: unpaidBills.length,
         totalUnpaid,
         announcements: announcements.slice(0, 3),

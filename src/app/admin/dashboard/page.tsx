@@ -15,6 +15,27 @@ interface DashboardStats {
   activeBookings: number;
 }
 
+// Types for API responses
+interface RoomData {
+  _id: string;
+  status: string;
+  roomNumber: string;
+  // ... other room properties
+}
+
+interface PaymentData {
+  _id: string;
+  status: string;
+  amount: number;
+  // ... other payment properties
+}
+
+interface BookingData {
+  _id: string;
+  status: string;
+  // ... other booking properties
+}
+
 interface StatCardProps {
   title: string;
   value: string | number;
@@ -41,7 +62,7 @@ export default function AdminDashboard() {
   const fetchDashboardData = async () => {
     try {
       const token = localStorage.getItem('token');
-      
+
       const [roomsRes, bookingsRes, paymentsRes] = await Promise.all([
         axios.get('/api/rooms', {
           headers: { Authorization: `Bearer ${token}` }
@@ -54,19 +75,19 @@ export default function AdminDashboard() {
         }),
       ]);
 
-      const rooms = roomsRes.data.data;
-      const bookings = bookingsRes.data.data;
-      const payments = paymentsRes.data.data;
+      const rooms = roomsRes.data.data as RoomData[];
+      const bookings = bookingsRes.data.data as BookingData[];
+      const payments = paymentsRes.data.data as PaymentData[];
 
       setStats({
         totalRooms: rooms.length,
-        availableRooms: rooms.filter((r: any) => r.status === 'available').length,
-        occupiedRooms: rooms.filter((r: any) => r.status === 'occupied').length,
-        pendingPayments: payments.filter((p: any) => p.status === 'pending').length,
+        availableRooms: rooms.filter((r: RoomData) => r.status === 'available').length,
+        occupiedRooms: rooms.filter((r: RoomData) => r.status === 'occupied').length,
+        pendingPayments: payments.filter((p: PaymentData) => p.status === 'pending').length,
         totalRevenue: payments
-          .filter((p: any) => p.status === 'verified')
-          .reduce((sum: number, p: any) => sum + p.amount, 0),
-        activeBookings: bookings.filter((b: any) => 
+          .filter((p: PaymentData) => p.status === 'verified')
+          .reduce((sum: number, p: PaymentData) => sum + p.amount, 0),
+        activeBookings: bookings.filter((b: BookingData) =>
           ['pending', 'confirmed'].includes(b.status)
         ).length,
       });

@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import axios from 'axios';
+import Link from 'next/link';
+import { AxiosErrorResponse } from '@/types';
 import styles from './login.module.css';
 
 export default function LoginPage() {
@@ -22,12 +23,12 @@ export default function LoginPage() {
 
     try {
       const response = await axios.post('/api/auth/login', formData);
-      
+
       if (response.data.success) {
         // Store token and user data in localStorage
         localStorage.setItem('token', response.data.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.data.user));
-        
+
         // Redirect based on role
         const role = response.data.data.user.role;
         if (role === 'admin' || role === 'owner') {
@@ -36,7 +37,8 @@ export default function LoginPage() {
           router.push('/dashboard');
         }
       }
-    } catch (err: any) {
+    } catch (error: unknown) {
+      const err = error as AxiosErrorResponse;
       setError(err.response?.data?.error || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
     } finally {
       setLoading(false);
@@ -51,7 +53,7 @@ export default function LoginPage() {
             เข้าสู่ระบบหอพักนักศึกษา
           </h2>
         </div>
-        
+
         <div className={styles.formContainer}>
           <form className={styles.form} onSubmit={handleSubmit}>
             {error && (
@@ -59,7 +61,7 @@ export default function LoginPage() {
                 {error}
               </div>
             )}
-            
+
             <div className={styles.inputGroup}>
               <div className={styles.fieldWrapper}>
                 <label htmlFor="email" className={styles.label}>
@@ -76,7 +78,7 @@ export default function LoginPage() {
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
               </div>
-              
+
               <div className={styles.fieldWrapper}>
                 <label htmlFor="password" className={styles.label}>
                   รหัสผ่าน

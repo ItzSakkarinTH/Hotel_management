@@ -4,11 +4,11 @@ import { Payment } from '@/models/Payment';
 import { Booking } from '@/models/Booking';
 import { Room } from '@/models/Room';
 import { ApiResponse, PaymentStatus, BookingStatus, RoomStatus } from '@/types';
-import { requireAdmin, AuthRequest } from '@/middleware/auth';
+import { requireAdmin, AuthRequest, RouteContext } from '@/middleware/auth';
 
 // POST verify payment (Admin/Owner only)
 export const POST = requireAdmin(
-  async (request: NextRequest, { params }: { params: { id: string } }) => {
+  async (request: NextRequest, context?: RouteContext) => {
     try {
       await connectDB();
 
@@ -28,7 +28,8 @@ export const POST = requireAdmin(
       }
 
       // Find payment
-      const payment = await Payment.findById(params.id);
+      const { id } = (await context?.params) as { id: string };
+      const payment = await Payment.findById(id);
       if (!payment) {
         return NextResponse.json<ApiResponse>(
           {
@@ -77,18 +78,19 @@ export const POST = requireAdmin(
         {
           success: true,
           data: payment,
-          message: status === PaymentStatus.VERIFIED 
-            ? 'ยืนยันการชำระเงินสำเร็จ' 
+          message: status === PaymentStatus.VERIFIED
+            ? 'ยืนยันการชำระเงินสำเร็จ'
             : 'ปฏิเสธการชำระเงิน',
         },
         { status: 200 }
       );
-    } catch (error: any) {
-      console.error('Verify payment error:', error);
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Verify payment error:', err);
       return NextResponse.json<ApiResponse>(
         {
           success: false,
-          error: error.message || 'เกิดข้อผิดพลาดในการตรวจสอบการชำระเงิน',
+          error: err.message || 'เกิดข้อผิดพลาดในการตรวจสอบการชำระเงิน',
         },
         { status: 500 }
       );

@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { Announcement } from '@/models/Announcement';
-import { requireAdmin } from '@/middleware/auth';
+import { requireAdmin, RouteContext } from '@/middleware/auth';
 import { ApiResponse } from '@/types';
 
 // PUT update announcement
 export const PUT = requireAdmin(async (
   request: NextRequest,
-  context: { params: Promise<{ id: string }> } // params เป็น Promise
+  context?: RouteContext
 ) => {
   try {
     await connectDB();
 
     // ✅ unwrap params
-    const { id } = await context.params;
+    const { id } = (await context?.params) as { id: string };
     if (!id) return NextResponse.json<ApiResponse>({ success: false, error: 'ไม่พบ ID ประกาศ' }, { status: 400 });
 
     const body = await request.json();
@@ -33,21 +33,22 @@ export const PUT = requireAdmin(async (
       data: updated,
       message: 'แก้ไขประกาศสำเร็จ',
     }, { status: 200 });
-  } catch (error: any) {
-    console.error('Update announcement error:', error);
-    return NextResponse.json<ApiResponse>({ success: false, error: error.message || 'เกิดข้อผิดพลาดในการแก้ไขประกาศ' }, { status: 500 });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Update announcement error:', err);
+    return NextResponse.json<ApiResponse>({ success: false, error: err.message || 'เกิดข้อผิดพลาดในการแก้ไขประกาศ' }, { status: 500 });
   }
 });
 
 // DELETE announcement
 export const DELETE = requireAdmin(async (
   request: NextRequest,
-  context: { params: Promise<{ id: string }> } // params เป็น Promise
+  context?: RouteContext
 ) => {
   try {
     await connectDB();
 
-    const { id } = await context.params;
+    const { id } = (await context?.params) as { id: string };
     if (!id) return NextResponse.json<ApiResponse>({ success: false, error: 'ไม่พบ ID ประกาศ' }, { status: 400 });
 
     const deleted = await Announcement.findByIdAndDelete(id);
@@ -57,8 +58,9 @@ export const DELETE = requireAdmin(async (
       success: true,
       message: 'ลบประกาศสำเร็จ',
     }, { status: 200 });
-  } catch (error: any) {
-    console.error('Delete announcement error:', error);
-    return NextResponse.json<ApiResponse>({ success: false, error: error.message || 'เกิดข้อผิดพลาดในการลบประกาศ' }, { status: 500 });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Delete announcement error:', err);
+    return NextResponse.json<ApiResponse>({ success: false, error: err.message || 'เกิดข้อผิดพลาดในการลบประกาศ' }, { status: 500 });
   }
 });

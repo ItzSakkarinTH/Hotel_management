@@ -68,16 +68,6 @@ export default function PublicDashboard() {
                 <br />
                 เข้าถึงระบบได้ทุกที่ทุกเวลา พร้อมบริการที่สะดวกสบาย
               </p>
-              <div className={styles.heroCta}>
-                <Link href="/login" className={styles.btnPrimary}>
-                  <span>เข้าสู่ระบบ</span>
-                  <span className={styles.btnArrow}>→</span>
-                </Link>
-                <Link href="/register" className={styles.btnSecondary}>
-                  <span>สมัครสมาชิก</span>
-                  <span className={styles.btnArrow}>→</span>
-                </Link>
-              </div>
             </div>
           </div>
         </div>

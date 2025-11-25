@@ -109,9 +109,6 @@ export default function AdminPaymentsPage() {
       <Navbar isLoggedIn={true} isAdmin={true} />
       <div className={styles.pageContainer}>
         <div className={styles.contentWrapper}>
-          <div style={{ marginBottom: '1rem' }}>
-            <BackButton />
-          </div>
           <h1 className={styles.pageTitle}>ตรวจสอบการชำระเงิน</h1>
 
           {/* Filters */}

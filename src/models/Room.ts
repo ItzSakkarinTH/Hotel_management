@@ -69,7 +69,6 @@ const roomSchema = new Schema<IRoom>(
 );
 
 // Indexes
-roomSchema.index({ roomNumber: 1 });
 roomSchema.index({ status: 1 });
 roomSchema.index({ price: 1 });
 

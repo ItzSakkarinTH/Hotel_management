@@ -2,17 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { Room } from '@/models/Room';
 import { ApiResponse } from '@/types';
-import { requireAdmin } from '@/middleware/auth';
 
 // GET single room
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
 
-    const room = await Room.findById(params.id);
+    const { id } = await context.params;
+    const room = await Room.findById(id);
 
     if (!room) {
       return NextResponse.json<ApiResponse>(
@@ -31,12 +31,13 @@ export async function GET(
       },
       { status: 200 }
     );
-  } catch (error: any) {
-    console.error('Get room error:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Get room error:', err);
     return NextResponse.json<ApiResponse>(
       {
         success: false,
-        error: error.message || 'เกิดข้อผิดพลาดในการดึงข้อมูลห้อง',
+        error: err.message || 'เกิดข้อผิดพลาดในการดึงข้อมูลห้อง',
       },
       { status: 500 }
     );
@@ -44,15 +45,19 @@ export async function GET(
 }
 
 // PUT update room (Admin/Owner only)
+import { requireAdmin, RouteContext } from '@/middleware/auth';
+
+// PUT update room (Admin/Owner only)
 export const PUT = requireAdmin(
-  async (request: NextRequest, { params }: { params: { id: string } }) => {
+  async (request: NextRequest, context?: RouteContext) => {
     try {
       await connectDB();
 
       const body = await request.json();
+      const { id } = (await context?.params) as { id: string };
 
       const room = await Room.findByIdAndUpdate(
-        params.id,
+        id,
         { $set: body },
         { new: true, runValidators: true }
       );
@@ -75,12 +80,13 @@ export const PUT = requireAdmin(
         },
         { status: 200 }
       );
-    } catch (error: any) {
-      console.error('Update room error:', error);
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Update room error:', err);
       return NextResponse.json<ApiResponse>(
         {
           success: false,
-          error: error.message || 'เกิดข้อผิดพลาดในการอัพเดทห้องพัก',
+          error: err.message || 'เกิดข้อผิดพลาดในการอัพเดทห้องพัก',
         },
         { status: 500 }
       );
@@ -89,12 +95,14 @@ export const PUT = requireAdmin(
 );
 
 // DELETE room (Admin/Owner only)
+// DELETE room (Admin/Owner only)
 export const DELETE = requireAdmin(
-  async (request: NextRequest, { params }: { params: { id: string } }) => {
+  async (request: NextRequest, context?: RouteContext) => {
     try {
       await connectDB();
+      const { id } = (await context?.params) as { id: string };
 
-      const room = await Room.findByIdAndDelete(params.id);
+      const room = await Room.findByIdAndDelete(id);
 
       if (!room) {
         return NextResponse.json<ApiResponse>(
@@ -113,12 +121,13 @@ export const DELETE = requireAdmin(
         },
         { status: 200 }
       );
-    } catch (error: any) {
-      console.error('Delete room error:', error);
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Delete room error:', err);
       return NextResponse.json<ApiResponse>(
         {
           success: false,
-          error: error.message || 'เกิดข้อผิดพลาดในการลบห้องพัก',
+          error: err.message || 'เกิดข้อผิดพลาดในการลบห้องพัก',
         },
         { status: 500 }
       );

@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import axios from 'axios';
+import Link from 'next/link';
+import { AxiosErrorResponse } from '@/types';
 import styles from './register.module.css';
 
 export default function RegisterPage() {
@@ -41,16 +42,17 @@ export default function RegisterPage() {
     try {
       const { confirmPassword, ...registerData } = formData;
       const response = await axios.post('/api/auth/register', registerData);
-      
+
       if (response.data.success) {
         // Store token and user data
         localStorage.setItem('token', response.data.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.data.user));
-        
+
         alert('ลงทะเบียนสำเร็จ!');
         router.push('/dashboard');
       }
-    } catch (err: any) {
+    } catch (error: unknown) {
+      const err = error as AxiosErrorResponse;
       setError(err.response?.data?.error || 'เกิดข้อผิดพลาดในการลงทะเบียน');
     } finally {
       setLoading(false);
@@ -68,7 +70,7 @@ export default function RegisterPage() {
             สมัครสมาชิกหอพักนักศึกษา
           </p>
         </div>
-        
+
         <div className={styles.formContainer}>
           <form className={styles.form} onSubmit={handleSubmit}>
             {error && (
@@ -76,7 +78,7 @@ export default function RegisterPage() {
                 {error}
               </div>
             )}
-            
+
             <div className={styles.inputGroup}>
               <div className={styles.gridRow}>
                 <div className={styles.fieldWrapper}>

@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import axios from 'axios';
 import Image from 'next/image';
-import { IRoom } from '@/types';
+import { IRoom, OCRData, AxiosErrorResponse, SlipData } from '@/types';
+import styles from './Booking.module.css';
+import SlipReaderIntegrated from '@/components/SlipReader';
 
 export default function BookingPage() {
   const router = useRouter();
@@ -15,9 +17,9 @@ export default function BookingPage() {
   const [loading, setLoading] = useState(true);
   const [checkInDate, setCheckInDate] = useState('');
   const [slipImage, setSlipImage] = useState<string>('');
-  const [slipFile, setSlipFile] = useState<File | null>(null);
-  const [ocrData, setOcrData] = useState<any>(null);
-  const [step, setStep] = useState(1); // 1: ข้อมูลห้อง, 2: ยืนยันการจอง, 3: อัพโหลดสลิป
+
+  const [ocrData, setOcrData] = useState<OCRData | null>(null);
+  const [step, setStep] = useState(1);
   const [bookingId, setBookingId] = useState<string>('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -63,32 +65,17 @@ export default function BookingPage() {
 
       if (response.data.success) {
         setBookingId(response.data.data._id);
-        setStep(3); // ไปหน้าอัพโหลดสลิป
+        setStep(3);
       }
-    } catch (err: any) {
+    } catch (error: unknown) {
+      const err = error as AxiosErrorResponse;
       setError(err.response?.data?.error || 'เกิดข้อผิดพลาดในการจอง');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
 
-    setSlipFile(file);
-
-    // Convert to base64
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setSlipImage(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-
-    // TODO: เรียก OCR API ของคุณที่นี่
-    // const ocrResult = await callOCRApi(file);
-    // setOcrData(ocrResult);
-  };
 
   const handlePaymentSubmit = async () => {
     if (!slipImage) {
@@ -117,7 +104,8 @@ export default function BookingPage() {
         alert('ส่งสลิปการโอนเงินสำเร็จ! รอการตรวจสอบจากผู้ดูแลระบบ');
         router.push('/dashboard');
       }
-    } catch (err: any) {
+    } catch (error: unknown) {
+      const err = error as AxiosErrorResponse;
       setError(err.response?.data?.error || 'เกิดข้อผิดพลาดในการส่งสลิป');
     } finally {
       setSubmitting(false);
@@ -126,102 +114,102 @@ export default function BookingPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-xl">กำลังโหลด...</div>
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingText}>กำลังโหลด...</div>
       </div>
     );
   }
 
   if (!room) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-xl text-red-600">ไม่พบข้อมูลห้องพัก</div>
+      <div className={styles.loadingContainer}>
+        <div className={styles.errorText}>ไม่พบข้อมูลห้องพัก</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
+    <div className={styles.container}>
+      <div className={styles.maxWidth}>
         {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-center">
-            <div className={`flex items-center ${step >= 1 ? 'text-indigo-600' : 'text-gray-400'}`}>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${step >= 1 ? 'bg-indigo-600 text-white' : 'bg-gray-300'}`}>
+        <div className={styles.progressContainer}>
+          <div className={styles.progressSteps}>
+            <div className={`${styles.stepItem} ${step >= 1 ? styles.stepItemActive : styles.stepItemInactive}`}>
+              <div className={`${styles.stepCircle} ${step >= 1 ? styles.stepCircleActive : styles.stepCircleInactive}`}>
                 1
               </div>
-              <span className="ml-2 font-medium">ข้อมูลห้อง</span>
+              <span className={styles.stepLabel}>ข้อมูลห้อง</span>
             </div>
-            <div className={`w-20 h-1 mx-4 ${step >= 2 ? 'bg-indigo-600' : 'bg-gray-300'}`}></div>
-            <div className={`flex items-center ${step >= 2 ? 'text-indigo-600' : 'text-gray-400'}`}>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-indigo-600 text-white' : 'bg-gray-300'}`}>
+            <div className={`${styles.stepLine} ${step >= 2 ? styles.stepLineActive : styles.stepLineInactive}`}></div>
+            <div className={`${styles.stepItem} ${step >= 2 ? styles.stepItemActive : styles.stepItemInactive}`}>
+              <div className={`${styles.stepCircle} ${step >= 2 ? styles.stepCircleActive : styles.stepCircleInactive}`}>
                 2
               </div>
-              <span className="ml-2 font-medium">ยืนยันการจอง</span>
+              <span className={styles.stepLabel}>ยืนยันการจอง</span>
             </div>
-            <div className={`w-20 h-1 mx-4 ${step >= 3 ? 'bg-indigo-600' : 'bg-gray-300'}`}></div>
-            <div className={`flex items-center ${step >= 3 ? 'text-indigo-600' : 'text-gray-400'}`}>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${step >= 3 ? 'bg-indigo-600 text-white' : 'bg-gray-300'}`}>
+            <div className={`${styles.stepLine} ${step >= 3 ? styles.stepLineActive : styles.stepLineInactive}`}></div>
+            <div className={`${styles.stepItem} ${step >= 3 ? styles.stepItemActive : styles.stepItemInactive}`}>
+              <div className={`${styles.stepCircle} ${step >= 3 ? styles.stepCircleActive : styles.stepCircleInactive}`}>
                 3
               </div>
-              <span className="ml-2 font-medium">ชำระเงิน</span>
+              <span className={styles.stepLabel}>ชำระเงิน</span>
             </div>
           </div>
         </div>
 
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          <div className={styles.errorBanner}>
             {error}
           </div>
         )}
 
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className={styles.card}>
           {/* Step 1 & 2: Room Info */}
           {step <= 2 && (
             <>
-              <h1 className="text-2xl font-bold text-gray-900 mb-6">
+              <h1 className={styles.title}>
                 จองห้อง {room.roomNumber}
               </h1>
 
               {/* Room Image */}
               {room.images && room.images.length > 0 && (
-                <div className="relative h-64 mb-6 rounded-lg overflow-hidden">
+                <div className={styles.roomImageContainer}>
                   <Image
                     src={room.images[0]}
                     alt={`ห้อง ${room.roomNumber}`}
                     fill
-                    className="object-cover"
+                    className={styles.roomImage}
                   />
                 </div>
               )}
 
               {/* Room Details */}
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div>
-                  <p className="text-sm text-gray-600">ราคา/เดือน</p>
-                  <p className="text-xl font-bold text-indigo-600">
+              <div className={styles.detailsGrid}>
+                <div className={styles.detailItem}>
+                  <p className={styles.detailLabel}>ราคา/เดือน</p>
+                  <p className={styles.detailPrice}>
                     {room.price.toLocaleString()} บาท
                   </p>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600">เงินประกัน</p>
-                  <p className="text-xl font-bold">
+                <div className={styles.detailItem}>
+                  <p className={styles.detailLabel}>เงินประกัน</p>
+                  <p className={styles.detailValue}>
                     {room.deposit.toLocaleString()} บาท
                   </p>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600">ค่าน้ำ</p>
-                  <p className="text-lg">{room.waterRate} บาท/หน่วย</p>
+                <div className={styles.detailItem}>
+                  <p className={styles.detailLabel}>ค่าน้ำ</p>
+                  <p className={styles.detailValueRegular}>{room.waterRate} บาท/หน่วย</p>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600">ค่าไฟ</p>
-                  <p className="text-lg">{room.electricityRate} บาท/หน่วย</p>
+                <div className={styles.detailItem}>
+                  <p className={styles.detailLabel}>ค่าไฟ</p>
+                  <p className={styles.detailValueRegular}>{room.electricityRate} บาท/หน่วย</p>
                 </div>
               </div>
 
               {/* Check-in Date */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className={styles.dateContainer}>
+                <label className={styles.label}>
                   วันที่เข้าพัก
                 </label>
                 <input
@@ -229,25 +217,25 @@ export default function BookingPage() {
                   value={checkInDate}
                   onChange={(e) => setCheckInDate(e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className={styles.dateInput}
                 />
               </div>
 
               {/* Summary */}
-              <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                <h3 className="font-bold text-gray-900 mb-2">สรุปการชำระเงิน</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
+              <div className={styles.summary}>
+                <h3 className={styles.summaryTitle}>สรุปการชำระเงิน</h3>
+                <div className={styles.summaryItems}>
+                  <div className={styles.summaryRow}>
                     <span>ค่าห้องเดือนแรก</span>
                     <span>{room.price.toLocaleString()} บาท</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className={styles.summaryRow}>
                     <span>เงินประกัน</span>
                     <span>{room.deposit.toLocaleString()} บาท</span>
                   </div>
-                  <div className="flex justify-between font-bold text-lg border-t pt-2">
+                  <div className={styles.summaryTotal}>
                     <span>รวมทั้งสิ้น</span>
-                    <span className="text-indigo-600">
+                    <span className={styles.summaryTotalAmount}>
                       {(room.price + room.deposit).toLocaleString()} บาท
                     </span>
                   </div>
@@ -257,24 +245,24 @@ export default function BookingPage() {
               {step === 1 && (
                 <button
                   onClick={() => setStep(2)}
-                  className="w-full py-3 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium"
+                  className={`${styles.button} ${styles.buttonPrimary}`}
                 >
                   ต่อไป
                 </button>
               )}
 
               {step === 2 && (
-                <div className="flex gap-4">
+                <div className={styles.buttonGroup}>
                   <button
                     onClick={() => setStep(1)}
-                    className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium"
+                    className={`${styles.buttonFlex} ${styles.buttonSecondary}`}
                   >
                     ย้อนกลับ
                   </button>
                   <button
                     onClick={handleBooking}
                     disabled={submitting}
-                    className="flex-1 py-3 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium disabled:opacity-50"
+                    className={`${styles.buttonFlex} ${styles.buttonPrimary}`}
                   >
                     {submitting ? 'กำลังจอง...' : 'ยืนยันการจอง'}
                   </button>
@@ -286,90 +274,55 @@ export default function BookingPage() {
           {/* Step 3: Upload Slip */}
           {step === 3 && (
             <>
-              <h1 className="text-2xl font-bold text-gray-900 mb-6">
+              <h1 className={styles.title}>
                 อัพโหลดสลิปการโอนเงิน
               </h1>
 
-              <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded mb-6">
-                <p className="font-medium">กรุณาโอนเงินมายังบัญชี:</p>
-                <p className="mt-2">ธนาคาร: ธนาคารกสิกรไทย</p>
+              <div className={styles.infoBanner}>
+                <p>กรุณาโอนเงินมายังบัญชี:</p>
+                <p>ธนาคาร: ธนาคารกสิกรไทย</p>
                 <p>เลขที่บัญชี: 123-4-56789-0</p>
                 <p>ชื่อบัญชี: หอพักนักศึกษา ABC</p>
-                <p className="mt-2 font-bold text-lg">
+                <p className={styles.infoAmount}>
                   จำนวนเงิน: {(room.price + room.deposit).toLocaleString()} บาท
                 </p>
               </div>
 
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  อัพโหลดสลิปการโอนเงิน
-                </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="hidden"
-                    id="slip-upload"
-                  />
-                  <label
-                    htmlFor="slip-upload"
-                    className="cursor-pointer flex flex-col items-center"
-                  >
-                    {slipImage ? (
-                      <div className="relative w-full h-64">
-                        <Image
-                          src={slipImage}
-                          alt="สลิปการโอนเงิน"
-                          fill
-                          className="object-contain"
-                        />
-                      </div>
-                    ) : (
-                      <>
-                        <svg
-                          className="w-12 h-12 text-gray-400 mb-2"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 4v16m8-8H4"
-                          />
-                        </svg>
-                        <span className="text-gray-600">คลิกเพื่ือเลือกไฟล์</span>
-                      </>
-                    )}
-                  </label>
-                </div>
+              <div className={styles.uploadContainer}>
+                <SlipReaderIntegrated
+                  expectedAmount={room.price + room.deposit}
+                  onSlipVerified={(data: SlipData) => {
+                    setSlipImage(data.slipImage);
+                    setOcrData(data.ocrData);
+                    setError('');
+                  }}
+                  onError={(err: string) => setError(err)}
+                />
               </div>
 
               {ocrData && (
-                <div className="bg-green-50 border border-green-200 p-4 rounded-lg mb-6">
-                  <h3 className="font-bold text-green-900 mb-2">
+                <div className={styles.ocrBanner}>
+                  <h3 className={styles.ocrTitle}>
                     ข้อมูลจากสลิป (OCR)
                   </h3>
-                  <pre className="text-sm text-green-800">
+                  <pre className={styles.ocrData}>
                     {JSON.stringify(ocrData, null, 2)}
                   </pre>
                 </div>
               )}
 
-              <div className="flex gap-4">
+              <div className={styles.buttonGroup}>
                 <button
                   onClick={() => setStep(2)}
                   disabled={submitting}
-                  className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium"
+                  className={`${styles.buttonFlex} ${styles.buttonSecondary}`}
                 >
                   ย้อนกลับ
                 </button>
                 <button
                   onClick={handlePaymentSubmit}
                   disabled={!slipImage || submitting}
-                  className="flex-1 py-3 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium disabled:opacity-50"
+                  className={`${styles.buttonFlex} ${styles.buttonPrimary}`}
                 >
                   {submitting ? 'กำลังส่ง...' : 'ส่งสลิป'}
                 </button>

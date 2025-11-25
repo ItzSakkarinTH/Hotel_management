@@ -5,15 +5,20 @@ import { Room } from '@/models/Room';
 import { ApiResponse, BookingStatus, RoomStatus } from '@/types';
 import { requireAuth, AuthRequest } from '@/middleware/auth';
 
+interface BookingQuery {
+  userId?: string;
+  status?: { $in: string[] };
+}
+
 // GET all bookings (user gets their own, admin gets all)
 export const GET = requireAuth(async (request: NextRequest) => {
   try {
     await connectDB();
 
     const user = (request as AuthRequest).user;
-    
-    let query: any = {};
-    
+
+    const query: BookingQuery = {};
+
     // Users can only see their own bookings
     if (user?.role === 'user') {
       query.userId = user.userId;
@@ -31,12 +36,13 @@ export const GET = requireAuth(async (request: NextRequest) => {
       },
       { status: 200 }
     );
-  } catch (error: any) {
-    console.error('Get bookings error:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Get bookings error:', err);
     return NextResponse.json<ApiResponse>(
       {
         success: false,
-        error: error.message || 'เกิดข้อผิดพลาดในการดึงข้อมูลการจอง',
+        error: err.message || 'เกิดข้อผิดพลาดในการดึงข้อมูลการจอง',
       },
       { status: 500 }
     );
@@ -125,12 +131,13 @@ export const POST = requireAuth(async (request: NextRequest) => {
       },
       { status: 201 }
     );
-  } catch (error: any) {
-    console.error('Create booking error:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Create booking error:', err);
     return NextResponse.json<ApiResponse>(
       {
         success: false,
-        error: error.message || 'เกิดข้อผิดพลาดในการจองห้องพัก',
+        error: err.message || 'เกิดข้อผิดพลาดในการจองห้องพัก',
       },
       { status: 500 }
     );

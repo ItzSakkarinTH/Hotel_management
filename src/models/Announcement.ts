@@ -18,9 +18,9 @@ const announcementSchema = new Schema<IAnnouncement>(
       default: 'medium',
     },
     publishedBy: {
-      type: String,
-      required: true,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
+      required: true,
     },
     isActive: {
       type: Boolean,
@@ -33,9 +33,7 @@ const announcementSchema = new Schema<IAnnouncement>(
 );
 
 // Indexes
-announcementSchema.index({ isActive: 1 });
-announcementSchema.index({ priority: 1 });
-announcementSchema.index({ createdAt: -1 });
+announcementSchema.index({ isActive: 1, priority: 1, createdAt: -1 });
 
 export const Announcement = mongoose.models.Announcement || 
   mongoose.model<IAnnouncement>('Announcement', announcementSchema);

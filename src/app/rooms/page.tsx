@@ -124,7 +124,7 @@ export default function RoomsPage() {
                   />
                 ) : (
                   <div className={styles.roomImagePlaceholder}>
-                    ไม่มีรูปภาพ
+                    ไม่มีรูปภาพแสดง
                   </div>
                 )}
                 <div className={styles.statusBadgeContainer}>

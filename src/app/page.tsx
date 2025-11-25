@@ -3,15 +3,23 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { IAnnouncement } from '@/types';
 import styles from './Dashboard.module.css';
+
+interface PublicStats {
+  totalRooms: number;
+  availableRooms: number;
+  startingPrice: number;
+  announcements: IAnnouncement[];
+}
 
 export default function PublicDashboard() {
   const router = useRouter();
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<PublicStats>({
     totalRooms: 20,
     availableRooms: 5,
     startingPrice: 3500,
-    announcements: [] as any[],
+    announcements: [],
   });
 
   useEffect(() => {
@@ -22,24 +30,24 @@ export default function PublicDashboard() {
       return;
     }
 
-    fetchPublicData();
-  }, []);
-
-  const fetchPublicData = async () => {
-    try {
-      // Fetch public announcements (no auth required)
-      const response = await fetch('/api/announcements?active=true');
-      if (response.ok) {
-        const data = await response.json();
-        setStats(prev => ({
-          ...prev,
-          announcements: data.data?.slice(0, 3) || [],
-        }));
+    const fetchPublicData = async () => {
+      try {
+        // Fetch public announcements (no auth required)
+        const response = await fetch('/api/announcements?active=true');
+        if (response.ok) {
+          const data = await response.json();
+          setStats(prev => ({
+            ...prev,
+            announcements: (data.data?.slice(0, 3) || []) as IAnnouncement[],
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching public data:', error);
       }
-    } catch (error) {
-      console.error('Error fetching public data:', error);
-    }
-  };
+    };
+
+    fetchPublicData();
+  }, [router]);
 
   return (
     <div className={styles.container}>
@@ -50,7 +58,7 @@ export default function PublicDashboard() {
             ยินดีต้อนรับสู่ระบบจัดการหอพัก
           </h1>
           <p className={styles.heroSubtitle}>
-            จองห้องพัก จ่ายค่าน้ำค่าไฟ และติดตามข่าวสารได้ง่ายๆ
+            จองห้องพัก จ่ายค่าน้ำค่าไฟ และติดตามข่าวสารหอพักได้ง่ายๆสามารถเข้ารับบริการของเราได้ทันที
           </p>
           <div className={styles.heroCta}>
             <Link href="/login" className={styles.btnPrimary}>

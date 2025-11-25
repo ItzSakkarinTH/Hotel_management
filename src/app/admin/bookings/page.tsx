@@ -1,192 +1,326 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import axios from 'axios';
-import { IBooking, BookingStatus } from '@/types';
+import Image from 'next/image';
+import { IRoom, SlipData } from '@/types';
+import SlipReaderIntegrated from '@/components/SlipReader';
+import styles from './BookingPage.module.css';
 
-interface BookingWithDetails extends IBooking {
-  roomId: any;
-  userId: any;
-}
+export default function BookingPage() {
+  const router = useRouter();
+  const params = useParams();
+  const roomId = params.id as string;
 
-export default function AdminBookingsPage() {
-  const [bookings, setBookings] = useState<BookingWithDetails[]>([]);
+  const [room, setRoom] = useState<IRoom | null>(null);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<BookingStatus | 'all'>('all');
+  const [checkInDate, setCheckInDate] = useState('');
+  const [slipData, setSlipData] = useState<SlipData | null>(null);
+  const [step, setStep] = useState(1);
+  const [bookingId, setBookingId] = useState<string>('');
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchBookings();
-  }, []);
+    if (roomId) {
+      fetchRoom();
+    }
+  }, [roomId]);
 
-  const fetchBookings = async () => {
+  const fetchRoom = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('/api/bookings', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setBookings(response.data.data);
+      const response = await axios.get(`/api/rooms/${roomId}`);
+      setRoom(response.data.data);
     } catch (error) {
-      console.error('Error fetching bookings:', error);
+      setError('ไม่พบข้อมูลห้องพัก');
     } finally {
       setLoading(false);
     }
   };
 
-  const getStatusBadge = (status: BookingStatus) => {
-    const badges = {
-      [BookingStatus.PENDING]: 'bg-yellow-100 text-yellow-800',
-      [BookingStatus.CONFIRMED]: 'bg-green-100 text-green-800',
-      [BookingStatus.CANCELLED]: 'bg-red-100 text-red-800',
-      [BookingStatus.COMPLETED]: 'bg-blue-100 text-blue-800',
-    };
-    
-    const labels = {
-      [BookingStatus.PENDING]: 'รอดำเนินการ',
-      [BookingStatus.CONFIRMED]: 'ยืนยันแล้ว',
-      [BookingStatus.CANCELLED]: 'ยกเลิก',
-      [BookingStatus.COMPLETED]: 'เสร็จสิ้น',
-    };
+  const handleBooking = async () => {
+    if (!checkInDate) {
+      setError('กรุณาเลือกวันเข้าพัก');
+      return;
+    }
 
-    return (
-      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${badges[status]}`}>
-        {labels[status]}
-      </span>
-    );
+    setSubmitting(true);
+    setError('');
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        '/api/bookings',
+        {
+          roomId,
+          checkInDate,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.data.success) {
+        setBookingId(response.data.data._id);
+        setStep(3);
+      }
+    } catch (error: unknown) {
+      const e = error as { response?: { data?: { error?: string } } };
+      alert(e.response?.data?.error || 'เกิดข้อผิดพลาด');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const filteredBookings = filter === 'all' 
-    ? bookings 
-    : bookings.filter(b => b.status === filter);
+  // Callback เมื่อสลิปผ่านการตรวจสอบแล้ว
+  const handleSlipVerified = (data: SlipData) => {
+    setSlipData(data);
+    setError(''); // ล้าง error
+  };
+
+  // Callback เมื่อเกิด error
+  const handleSlipError = (errorMsg: string) => {
+    setError(errorMsg);
+    setSlipData(null);
+  };
+
+  const handlePaymentSubmit = async () => {
+    if (!slipData) {
+      setError('กรุณาอัพโหลดสลิปการโอนเงิน');
+      return;
+    }
+
+    setSubmitting(true);
+    setError('');
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        '/api/payments',
+        {
+          bookingId,
+          slipImage: slipData.slipImage,
+          ocrData: slipData.ocrData,
+          qrData: slipData.qrData,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.data.success) {
+        alert('ส่งสลิปการโอนเงินสำเร็จ! รอการตรวจสอบจากผู้ดูแลระบบ');
+        router.push('/dashboard');
+      }
+    } catch (error: unknown) {
+      const e = error as { response?: { data?: { error?: string } } };
+      alert(e.response?.data?.error || 'เกิดข้อผิดพลาด');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   if (loading) {
-    return <div className="flex justify-center items-center min-h-screen">กำลังโหลด...</div>;
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingText}>กำลังโหลด...</div>
+      </div>
+    );
   }
 
+  if (!room) {
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.errorText}>ไม่พบข้อมูลห้องพัก</div>
+      </div>
+    );
+  }
+
+  const totalAmount = room.price + room.deposit;
+
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">จัดการการจอง</h1>
-
-        {/* Filters */}
-        <div className="mb-6 flex gap-2 flex-wrap">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-lg ${
-              filter === 'all' 
-                ? 'bg-indigo-600 text-white' 
-                : 'bg-white text-gray-700 border border-gray-300'
-            }`}
-          >
-            ทั้งหมด ({bookings.length})
-          </button>
-          <button
-            onClick={() => setFilter(BookingStatus.PENDING)}
-            className={`px-4 py-2 rounded-lg ${
-              filter === BookingStatus.PENDING 
-                ? 'bg-yellow-600 text-white' 
-                : 'bg-white text-gray-700 border border-gray-300'
-            }`}
-          >
-            รอดำเนินการ ({bookings.filter(b => b.status === BookingStatus.PENDING).length})
-          </button>
-          <button
-            onClick={() => setFilter(BookingStatus.CONFIRMED)}
-            className={`px-4 py-2 rounded-lg ${
-              filter === BookingStatus.CONFIRMED 
-                ? 'bg-green-600 text-white' 
-                : 'bg-white text-gray-700 border border-gray-300'
-            }`}
-          >
-            ยืนยันแล้ว ({bookings.filter(b => b.status === BookingStatus.CONFIRMED).length})
-          </button>
-        </div>
-
-        {/* Bookings Table */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ผู้จอง
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ห้อง
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    วันเข้าพัก
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ยอดเงิน
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ชำระมัดจำ
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    สถานะ
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    วันที่จอง
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredBookings.map((booking) => (
-                  <tr key={booking._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {booking.userId?.firstName} {booking.userId?.lastName}
-                      </div>
-                      <div className="text-sm text-gray-500">{booking.userId?.email}</div>
-                      <div className="text-sm text-gray-500">{booking.userId?.phoneNumber}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        ห้อง {booking.roomId?.roomNumber}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {booking.roomId?.price?.toLocaleString()} ฿/เดือน
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {new Date(booking.checkInDate).toLocaleDateString('th-TH')}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {booking.totalAmount.toLocaleString()} ฿
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {booking.depositPaid ? (
-                        <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                          ชำระแล้ว
-                        </span>
-                      ) : (
-                        <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                          ยังไม่ชำระ
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getStatusBadge(booking.status)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(booking.createdAt).toLocaleDateString('th-TH')}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+    <div className={styles.container}>
+      <div className={styles.maxWidth}>
+        {/* Progress Steps */}
+        <div className={styles.progressContainer}>
+          <div className={styles.progressSteps}>
+            <div className={`${styles.stepItem} ${step >= 1 ? styles.stepItemActive : styles.stepItemInactive}`}>
+              <div className={`${styles.stepCircle} ${step >= 1 ? styles.stepCircleActive : styles.stepCircleInactive}`}>
+                1
+              </div>
+              <span className={styles.stepLabel}>ข้อมูลห้อง</span>
+            </div>
+            <div className={`${styles.stepLine} ${step >= 2 ? styles.stepLineActive : styles.stepLineInactive}`}></div>
+            <div className={`${styles.stepItem} ${step >= 2 ? styles.stepItemActive : styles.stepItemInactive}`}>
+              <div className={`${styles.stepCircle} ${step >= 2 ? styles.stepCircleActive : styles.stepCircleInactive}`}>
+                2
+              </div>
+              <span className={styles.stepLabel}>ยืนยันการจอง</span>
+            </div>
+            <div className={`${styles.stepLine} ${step >= 3 ? styles.stepLineActive : styles.stepLineInactive}`}></div>
+            <div className={`${styles.stepItem} ${step >= 3 ? styles.stepItemActive : styles.stepItemInactive}`}>
+              <div className={`${styles.stepCircle} ${step >= 3 ? styles.stepCircleActive : styles.stepCircleInactive}`}>
+                3
+              </div>
+              <span className={styles.stepLabel}>ชำระเงิน</span>
+            </div>
           </div>
         </div>
 
-        {filteredBookings.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-lg shadow-md mt-4">
-            <p className="text-gray-500 text-lg">ไม่พบข้อมูลการจอง</p>
+        {error && (
+          <div className={styles.errorBanner}>
+            {error}
           </div>
         )}
+
+        <div className={styles.card}>
+          {/* Step 1 & 2: Room Info */}
+          {step <= 2 && (
+            <>
+              <h1 className={styles.title}>
+                จองห้อง {room.roomNumber}
+              </h1>
+
+              {room.images && room.images.length > 0 && (
+                <div className={styles.roomImageContainer}>
+                  <Image
+                    src={room.images[0]}
+                    alt={`ห้อง ${room.roomNumber}`}
+                    fill
+                    className={styles.roomImage}
+                  />
+                </div>
+              )}
+
+              <div className={styles.detailsGrid}>
+                <div className={styles.detailItem}>
+                  <p className={styles.detailLabel}>ราคา/เดือน</p>
+                  <p className={styles.detailPrice}>
+                    {room.price.toLocaleString()} บาท
+                  </p>
+                </div>
+                <div className={styles.detailItem}>
+                  <p className={styles.detailLabel}>เงินประกัน</p>
+                  <p className={styles.detailValue}>
+                    {room.deposit.toLocaleString()} บาท
+                  </p>
+                </div>
+                <div className={styles.detailItem}>
+                  <p className={styles.detailLabel}>ค่าน้ำ</p>
+                  <p className={styles.detailValueRegular}>{room.waterRate} บาท/หน่วย</p>
+                </div>
+                <div className={styles.detailItem}>
+                  <p className={styles.detailLabel}>ค่าไฟ</p>
+                  <p className={styles.detailValueRegular}>{room.electricityRate} บาท/หน่วย</p>
+                </div>
+              </div>
+
+              <div className={styles.dateContainer}>
+                <label className={styles.label}>
+                  วันที่เข้าพัก
+                </label>
+                <input
+                  type="date"
+                  value={checkInDate}
+                  onChange={(e) => setCheckInDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  className={styles.dateInput}
+                />
+              </div>
+
+              <div className={styles.summary}>
+                <h3 className={styles.summaryTitle}>สรุปการชำระเงิน</h3>
+                <div className={styles.summaryItems}>
+                  <div className={styles.summaryRow}>
+                    <span>ค่าห้องเดือนแรก</span>
+                    <span>{room.price.toLocaleString()} บาท</span>
+                  </div>
+                  <div className={styles.summaryRow}>
+                    <span>เงินประกัน</span>
+                    <span>{room.deposit.toLocaleString()} บาท</span>
+                  </div>
+                  <div className={styles.summaryTotal}>
+                    <span>รวมทั้งสิ้น</span>
+                    <span className={styles.summaryTotalAmount}>
+                      {totalAmount.toLocaleString()} บาท
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {step === 1 && (
+                <button
+                  onClick={() => setStep(2)}
+                  className={`${styles.button} ${styles.buttonPrimary}`}
+                >
+                  ต่อไป
+                </button>
+              )}
+
+              {step === 2 && (
+                <div className={styles.buttonGroup}>
+                  <button
+                    onClick={() => setStep(1)}
+                    className={`${styles.buttonFlex} ${styles.buttonSecondary}`}
+                  >
+                    ย้อนกลับ
+                  </button>
+                  <button
+                    onClick={handleBooking}
+                    disabled={submitting}
+                    className={`${styles.buttonFlex} ${styles.buttonPrimary}`}
+                  >
+                    {submitting ? 'กำลังจอง...' : 'ยืนยันการจอง'}
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Step 3: Upload Slip with OCR */}
+          {step === 3 && (
+            <>
+              <h1 className={styles.title}>
+                ชำระเงิน
+              </h1>
+
+              <div className={styles.infoBanner}>
+                <p>กรุณาโอนเงินมายังบัญชี:</p>
+                <p>ธนาคาร: ธนาคารกสิกรไทย</p>
+                <p>เลขที่บัญชี: 123-4-56789-0</p>
+                <p>ชื่อบัญชี: หอพักนักศึกษา ABC</p>
+                <p className={styles.infoAmount}>
+                  จำนวนเงิน: {totalAmount.toLocaleString()} บาท
+                </p>
+              </div>
+
+              {/* ใช้ SlipReader Component */}
+              <SlipReaderIntegrated
+                expectedAmount={totalAmount}
+                onSlipVerified={handleSlipVerified}
+                onError={handleSlipError}
+              />
+
+              <div className={styles.buttonGroup}>
+                <button
+                  onClick={() => setStep(2)}
+                  disabled={submitting}
+                  className={`${styles.buttonFlex} ${styles.buttonSecondary}`}
+                >
+                  ย้อนกลับ
+                </button>
+                <button
+                  onClick={handlePaymentSubmit}
+                  disabled={!slipData || submitting}
+                  className={`${styles.buttonFlex} ${styles.buttonPrimary}`}
+                >
+                  {submitting ? 'กำลังส่ง...' : 'ยืนยันการชำระเงิน'}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

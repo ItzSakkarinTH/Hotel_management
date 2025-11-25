@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/jwt';
 import { UserRole, JWTPayload } from '@/types';
 
+// Type for Next.js 15 API Route context (params is now a Promise)
+export interface RouteContext {
+  params: Promise<Record<string, string | string[]>>;
+}
+
 export interface AuthRequest extends NextRequest {
   user?: JWTPayload;
 }
@@ -9,7 +14,7 @@ export interface AuthRequest extends NextRequest {
 export const authenticate = async (request: NextRequest): Promise<JWTPayload | null> => {
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '') ||
-                  request.cookies.get('token')?.value;
+      request.cookies.get('token')?.value;
 
     if (!token) {
       return null;
@@ -22,8 +27,8 @@ export const authenticate = async (request: NextRequest): Promise<JWTPayload | n
   }
 };
 
-export const requireAuth = (handler: Function) => {
-  return async (request: NextRequest, context?: any) => {
+export const requireAuth = (handler: (req: NextRequest, ctx?: RouteContext) => Promise<NextResponse>) => {
+  return async (request: NextRequest, context?: RouteContext) => {
     const user = await authenticate(request);
 
     if (!user) {
@@ -41,8 +46,8 @@ export const requireAuth = (handler: Function) => {
 };
 
 export const requireRole = (roles: UserRole[]) => {
-  return (handler: Function) => {
-    return requireAuth(async (request: NextRequest, context?: any) => {
+  return (handler: (req: NextRequest, ctx?: RouteContext) => Promise<NextResponse>) => {
+    return requireAuth(async (request: NextRequest, context?: RouteContext) => {
       const user = (request as AuthRequest).user;
 
       if (!user || !roles.includes(user.role)) {

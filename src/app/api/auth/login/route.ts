@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { User } from '@/models/user';
+import { User } from '@/models/User';
 import { generateToken } from '@/lib/jwt';
 import { ApiResponse } from '@/types';
 
@@ -82,12 +82,13 @@ export async function POST(request: NextRequest) {
     });
 
     return response;
-  } catch (error: any) {
-    console.error('Login error:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Login error:', err);
     return NextResponse.json<ApiResponse>(
       {
         success: false,
-        error: error.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ',
+        error: err.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ',
       },
       { status: 500 }
     );

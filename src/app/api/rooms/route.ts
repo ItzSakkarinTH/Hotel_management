@@ -4,6 +4,15 @@ import { Room } from '@/models/Room';
 import { ApiResponse, RoomStatus } from '@/types';
 import { requireAdmin } from '@/middleware/auth';
 
+interface RoomQuery {
+  status?: string;
+  price?: {
+    $gte?: number;
+    $lte?: number;
+  };
+  floor?: number;
+}
+
 // GET all rooms (with filters)
 export async function GET(request: NextRequest) {
   try {
@@ -16,7 +25,7 @@ export async function GET(request: NextRequest) {
     const floor = searchParams.get('floor');
 
     // Build query
-    const query: any = {};
+    const query: RoomQuery = {};
     if (status) query.status = status;
     if (minPrice || maxPrice) {
       query.price = {};
@@ -34,12 +43,13 @@ export async function GET(request: NextRequest) {
       },
       { status: 200 }
     );
-  } catch (error: any) {
-    console.error('Get rooms error:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Get rooms error:', err);
     return NextResponse.json<ApiResponse>(
       {
         success: false,
-        error: error.message || 'เกิดข้อผิดพลาดในการดึงข้อมูลห้อง',
+        error: err.message || 'เกิดข้อผิดพลาดในการดึงข้อมูลห้อง',
       },
       { status: 500 }
     );
@@ -114,12 +124,13 @@ export const POST = requireAdmin(async (request: NextRequest) => {
       },
       { status: 201 }
     );
-  } catch (error: any) {
-    console.error('Create room error:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Create room error:', err);
     return NextResponse.json<ApiResponse>(
       {
         success: false,
-        error: error.message || 'เกิดข้อผิดพลาดในการเพิ่มห้องพัก',
+        error: err.message || 'เกิดข้อผิดพลาดในการเพิ่มห้องพัก',
       },
       { status: 500 }
     );

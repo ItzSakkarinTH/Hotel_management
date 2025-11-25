@@ -6,7 +6,7 @@ interface IUserMethods {
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
-type UserModel = Model<IUser, {}, IUserMethods>;
+type UserModel = Model<IUser, Record<string, never>, IUserMethods>;
 
 const userSchema = new Schema<IUser, UserModel, IUserMethods>(
   {
@@ -57,7 +57,7 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
 userSchema.pre('save', async function () {
   // ถ้า password ไม่ได้ถูกแก้ไข ก็ return ออกไปเลย
   if (!this.isModified('password')) return;
-  
+
   // Hash password
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
@@ -79,6 +79,5 @@ userSchema.methods.comparePassword = async function (
 userSchema.index({ role: 1 });
 
 // ป้องกัน OverwriteModelError ใน development mode
-export const User = (mongoose.models.User as UserModel) || 
+export const User = (mongoose.models.User as UserModel) ||
   mongoose.model<IUser, UserModel>('User', userSchema);
-  

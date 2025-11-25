@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Link from 'next/link';
 import styles from './AdminDashboard.module.css';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import BackButton from '@/components/BackButton';
 
 interface DashboardStats {
   totalRooms: number;
@@ -116,90 +119,79 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className={styles.container}>
-      {/* Header */}
-      <div className={styles.header}>
-        <div className={styles.headerContent}>
-          <div className={styles.headerInfo}>
+    <>
+      <Navbar isLoggedIn={true} isAdmin={true} />
+      <div className={styles.container}>
+        <div className={styles.content}>
+          <div style={{ marginBottom: '1rem' }}>
+            <BackButton />
+          </div>
+
+          <div className={styles.headerInfo} style={{ marginBottom: '2rem' }}>
             <h1 className={styles.headerTitle}>แดชบอร์ดผู้ดูแลระบบ</h1>
-            <div className={styles.headerButtons}>
-              <Link href="/admin/rooms-management" className={styles.btnPrimary}>
-                จัดการห้องพัก
+          </div>
+
+          {/* Stats Grid */}
+          <div className={styles.statsGrid}>
+            <StatCard
+              title="ห้องพักทั้งหมด"
+              value={stats.totalRooms}
+              color="borderBlue"
+              link="/admin/rooms-management"
+            />
+            <StatCard
+              title="ห้องว่าง"
+              value={stats.availableRooms}
+              color="borderGreen"
+              link="/admin/rooms-management?status=available"
+            />
+            <StatCard
+              title="ห้องเต็ม"
+              value={stats.occupiedRooms}
+              color="borderRed"
+              link="/admin/rooms-management?status=occupied"
+            />
+            <StatCard
+              title="การจองที่รอดำเนินการ"
+              value={stats.activeBookings}
+              color="borderYellow"
+              link="/admin/bookings"
+            />
+            <StatCard
+              title="สลิปรอตรวจสอบ"
+              value={stats.pendingPayments}
+              color="borderPurple"
+              link="/admin/payments"
+            />
+            <StatCard
+              title="รายได้รวม"
+              value={`${stats.totalRevenue.toLocaleString()} ฿`}
+              color="borderEmerald"
+              link="/admin/payments"
+            />
+          </div>
+
+          {/* Quick Actions */}
+          <div className={styles.quickActionsCard}>
+            <h2 className={styles.quickActionsTitle}>เมนูด่วน</h2>
+            <div className={styles.quickActionsGrid}>
+              <Link href="/admin/rooms-management/new" className={styles.actionIndigo}>
+                <span className={styles.actionText}>+ เพิ่มห้องพักใหม่</span>
               </Link>
-              <button
-                onClick={() => {
-                  localStorage.clear();
-                  router.push('/login');
-                }}
-                className={styles.btnDanger}
-              >
-                ออกจากระบบ
-              </button>
+              <Link href="/admin/bookings" className={styles.actionGreen}>
+                <span className={styles.actionText}>จัดการการจอง</span>
+              </Link>
+              <Link href="/admin/payments" className={styles.actionPurple}>
+                <span className={styles.actionText}>ตรวจสอบสลิป</span>
+              </Link>
+              <Link href="/admin/announcements" className={styles.actionOrange}>
+                <span className={styles.actionText}>ประกาศข่าวสาร</span>
+              </Link>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Stats Grid */}
-      <div className={styles.content}>
-        <div className={styles.statsGrid}>
-          <StatCard
-            title="ห้องพักทั้งหมด"
-            value={stats.totalRooms}
-            color="borderBlue"
-            link="/admin/rooms-management"
-          />
-          <StatCard
-            title="ห้องว่าง"
-            value={stats.availableRooms}
-            color="borderGreen"
-            link="/admin/rooms-management?status=available"
-          />
-          <StatCard
-            title="ห้องเต็ม"
-            value={stats.occupiedRooms}
-            color="borderRed"
-            link="/admin/rooms-management?status=occupied"
-          />
-          <StatCard
-            title="การจองที่รอดำเนินการ"
-            value={stats.activeBookings}
-            color="borderYellow"
-            link="/admin/bookings"
-          />
-          <StatCard
-            title="สลิปรอตรวจสอบ"
-            value={stats.pendingPayments}
-            color="borderPurple"
-            link="/admin/payments"
-          />
-          <StatCard
-            title="รายได้รวม"
-            value={`${stats.totalRevenue.toLocaleString()} ฿`}
-            color="borderEmerald"
-            link="/admin/payments"
-          />
-        </div>
-
-        {/* Quick Actions */}
-        <div className={styles.quickActionsCard}>
-          <h2 className={styles.quickActionsTitle}>เมนูด่วน</h2>
-          <div className={styles.quickActionsGrid}>
-            <Link href="/admin/rooms-management/new" className={styles.actionIndigo}>
-              <span className={styles.actionText}>+ เพิ่มห้องพักใหม่</span>
-            </Link>
-            <Link href="/admin/bookings" className={styles.actionGreen}>
-              <span className={styles.actionText}>จัดการการจอง</span>
-            </Link>
-            <Link href="/admin/payments" className={styles.actionPurple}>
-              <span className={styles.actionText}>ตรวจสอบสลิป</span>
-            </Link>
-            <Link href="/admin/announcements" className={styles.actionOrange}>
-              <span className={styles.actionText}>ประกาศข่าวสาร</span>
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
+      <Footer />
+    </>
   );
 }

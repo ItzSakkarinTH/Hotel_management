@@ -1,5 +1,8 @@
 import mongoose, { Schema } from 'mongoose';
 import { IBooking, BookingStatus } from '@/types';
+// Import User and Room models to ensure they are registered
+import './User';
+import './Room';
 
 const bookingSchema = new Schema<IBooking>(
   {

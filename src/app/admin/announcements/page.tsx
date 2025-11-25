@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { IAnnouncement } from '@/types';
 import styles from './AdminAnnouncements.module.css';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import BackButton from '@/components/BackButton';
 
 export default function AdminAnnouncementsPage() {
   const [announcements, setAnnouncements] = useState<IAnnouncement[]>([]);
@@ -37,7 +40,7 @@ export default function AdminAnnouncementsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const token = localStorage.getItem('token');
 
@@ -58,10 +61,10 @@ export default function AdminAnnouncementsPage() {
       setShowModal(false);
       resetForm();
       fetchAnnouncements();
-      } catch (error: unknown) {
-        const e = error as { response?: { data?: { error?: string } } };
-        alert(e.response?.data?.error || 'เกิดข้อผิดพลาด');
-      }
+    } catch (error: unknown) {
+      const e = error as { response?: { data?: { error?: string } } };
+      alert(e.response?.data?.error || 'เกิดข้อผิดพลาด');
+    }
   };
 
   const handleEdit = (announcement: IAnnouncement) => {
@@ -85,10 +88,10 @@ export default function AdminAnnouncementsPage() {
       });
       alert('ลบประกาศสำเร็จ');
       fetchAnnouncements();
-      } catch (error: unknown) {
-        const e = error as { response?: { data?: { error?: string } } };
-        alert(e.response?.data?.error || 'เกิดข้อผิดพลาด');
-      }
+    } catch (error: unknown) {
+      const e = error as { response?: { data?: { error?: string } } };
+      alert(e.response?.data?.error || 'เกิดข้อผิดพลาด');
+    }
   };
 
   const toggleActive = async (id: string, currentStatus: boolean) => {
@@ -100,10 +103,10 @@ export default function AdminAnnouncementsPage() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       fetchAnnouncements();
-      } catch (error: unknown) {
-        const e = error as { response?: { data?: { error?: string } } };
-        alert(e.response?.data?.error || 'เกิดข้อผิดพลาด');
-      }
+    } catch (error: unknown) {
+      const e = error as { response?: { data?: { error?: string } } };
+      alert(e.response?.data?.error || 'เกิดข้อผิดพลาด');
+    }
   };
 
   const resetForm = () => {
@@ -139,174 +142,179 @@ export default function AdminAnnouncementsPage() {
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.wrapper}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>จัดการประกาศข่าวสาร</h1>
-          <button
-            onClick={() => {
-              resetForm();
-              setShowModal(true);
-            }}
-            className={styles.createButton}
-          >
-            + สร้างประกาศใหม่
-          </button>
-        </div>
-
-        {/* Announcements List */}
-        <div className={styles.announcementsList}>
-          {announcements.map((announcement) => (
-            <div
-              key={announcement._id}
-              className={`${styles.announcementCard} ${
-                !announcement.isActive ? styles.inactive : ''
-              }`}
+    <>
+      <Navbar isLoggedIn={true} isAdmin={true} />
+      <div className={styles.container}>
+        <div className={styles.wrapper}>
+          <div style={{ marginBottom: '1rem' }}>
+            <BackButton />
+          </div>
+          <div className={styles.header}>
+            <h1 className={styles.title}>จัดการประกาศข่าวสาร</h1>
+            <button
+              onClick={() => {
+                resetForm();
+                setShowModal(true);
+              }}
+              className={styles.createButton}
             >
-              <div className={styles.cardHeader}>
-                <div className={styles.cardContent}>
-                  <div className={styles.cardTitleRow}>
-                    <h3 className={styles.cardTitle}>
-                      {announcement.title}
-                    </h3>
-                    {getPriorityBadge(announcement.priority)}
-                    {!announcement.isActive && (
-                      <span className={`${styles.badge} ${styles.badgeInactive}`}>
-                        ปิดการแสดงผล
-                      </span>
-                    )}
+              + สร้างประกาศใหม่
+            </button>
+          </div>
+
+          {/* Announcements List */}
+          <div className={styles.announcementsList}>
+            {announcements.map((announcement) => (
+              <div
+                key={announcement._id}
+                className={`${styles.announcementCard} ${!announcement.isActive ? styles.inactive : ''
+                  }`}
+              >
+                <div className={styles.cardHeader}>
+                  <div className={styles.cardContent}>
+                    <div className={styles.cardTitleRow}>
+                      <h3 className={styles.cardTitle}>
+                        {announcement.title}
+                      </h3>
+                      {getPriorityBadge(announcement.priority)}
+                      {!announcement.isActive && (
+                        <span className={`${styles.badge} ${styles.badgeInactive}`}>
+                          ปิดการแสดงผล
+                        </span>
+                      )}
+                    </div>
+                    <p className={styles.cardText}>{announcement.content}</p>
                   </div>
-                  <p className={styles.cardText}>{announcement.content}</p>
+                </div>
+
+                <div className={styles.cardFooter}>
+                  <div className={styles.cardDate}>
+                    สร้างเมื่อ: {new Date(announcement.createdAt).toLocaleDateString('th-TH')}
+                  </div>
+                  <div className={styles.cardActions}>
+                    <button
+                      onClick={() => toggleActive(announcement._id, announcement.isActive)}
+                      className={`${styles.actionButton} ${announcement.isActive
+                          ? styles.toggleButton
+                          : styles.toggleButtonActive
+                        }`}
+                    >
+                      {announcement.isActive ? 'ซ่อน' : 'แสดง'}
+                    </button>
+                    <button
+                      onClick={() => handleEdit(announcement)}
+                      className={`${styles.actionButton} ${styles.editButton}`}
+                    >
+                      แก้ไข
+                    </button>
+                    <button
+                      onClick={() => handleDelete(announcement._id)}
+                      className={`${styles.actionButton} ${styles.deleteButton}`}
+                    >
+                      ลบ
+                    </button>
+                  </div>
                 </div>
               </div>
+            ))}
+          </div>
 
-              <div className={styles.cardFooter}>
-                <div className={styles.cardDate}>
-                  สร้างเมื่อ: {new Date(announcement.createdAt).toLocaleDateString('th-TH')}
-                </div>
-                <div className={styles.cardActions}>
-                  <button
-                    onClick={() => toggleActive(announcement._id, announcement.isActive)}
-                    className={`${styles.actionButton} ${
-                      announcement.isActive
-                        ? styles.toggleButton
-                        : styles.toggleButtonActive
-                    }`}
-                  >
-                    {announcement.isActive ? 'ซ่อน' : 'แสดง'}
-                  </button>
-                  <button
-                    onClick={() => handleEdit(announcement)}
-                    className={`${styles.actionButton} ${styles.editButton}`}
-                  >
-                    แก้ไข
-                  </button>
-                  <button
-                    onClick={() => handleDelete(announcement._id)}
-                    className={`${styles.actionButton} ${styles.deleteButton}`}
-                  >
-                    ลบ
-                  </button>
-                </div>
+          {announcements.length === 0 && (
+            <div className={styles.emptyState}>
+              <p className={styles.emptyText}>ยังไม่มีประกาศ</p>
+            </div>
+          )}
+
+          {/* Modal */}
+          {showModal && (
+            <div className={styles.modalOverlay}>
+              <div className={styles.modal}>
+                <h2 className={styles.modalTitle}>
+                  {editingAnnouncement ? 'แก้ไขประกาศ' : 'สร้างประกาศใหม่'}
+                </h2>
+
+                <form onSubmit={handleSubmit} className={styles.form}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      หัวข้อ *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      className={styles.input}
+                      placeholder="เช่น แจ้งปิดน้ำประปา วันที่ 25 ธ.ค. 2567"
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      เนื้อหา *
+                    </label>
+                    <textarea
+                      required
+                      rows={6}
+                      value={formData.content}
+                      onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                      className={styles.textarea}
+                      placeholder="รายละเอียดของประกาศ..."
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      ระดับความสำคัญ
+                    </label>
+                    <select
+                      value={formData.priority}
+                      onChange={(e) => setFormData({ ...formData, priority: e.target.value as 'low' | 'medium' | 'high' })}
+                      className={styles.select}
+                    >
+                      <option value="low">ปกติ</option>
+                      <option value="medium">ปานกลาง</option>
+                      <option value="high">สำคัญ</option>
+                    </select>
+                  </div>
+
+                  <div className={styles.checkboxGroup}>
+                    <input
+                      type="checkbox"
+                      id="isActive"
+                      checked={formData.isActive}
+                      onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                      className={styles.checkbox}
+                    />
+                    <label htmlFor="isActive" className={styles.checkboxLabel}>
+                      แสดงประกาศ
+                    </label>
+                  </div>
+
+                  <div className={styles.formActions}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowModal(false);
+                        resetForm();
+                      }}
+                      className={styles.cancelButton}
+                    >
+                      ยกเลิก
+                    </button>
+                    <button
+                      type="submit"
+                      className={styles.submitButton}
+                    >
+                      บันทึก
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
-          ))}
+          )}
         </div>
-
-        {announcements.length === 0 && (
-          <div className={styles.emptyState}>
-            <p className={styles.emptyText}>ยังไม่มีประกาศ</p>
-          </div>
-        )}
-
-        {/* Modal */}
-        {showModal && (
-          <div className={styles.modalOverlay}>
-            <div className={styles.modal}>
-              <h2 className={styles.modalTitle}>
-                {editingAnnouncement ? 'แก้ไขประกาศ' : 'สร้างประกาศใหม่'}
-              </h2>
-              
-              <form onSubmit={handleSubmit} className={styles.form}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    หัวข้อ *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className={styles.input}
-                    placeholder="เช่น แจ้งปิดน้ำประปา วันที่ 25 ธ.ค. 2567"
-                  />
-                </div>
-
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    เนื้อหา *
-                  </label>
-                  <textarea
-                    required
-                    rows={6}
-                    value={formData.content}
-                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                    className={styles.textarea}
-                    placeholder="รายละเอียดของประกาศ..."
-                  />
-                </div>
-
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    ระดับความสำคัญ
-                  </label>
-                  <select
-                    value={formData.priority}
-                    onChange={(e) => setFormData({ ...formData, priority: e.target.value as 'low' | 'medium' | 'high' })}
-                    className={styles.select}
-                  >
-                    <option value="low">ปกติ</option>
-                    <option value="medium">ปานกลาง</option>
-                    <option value="high">สำคัญ</option>
-                  </select>
-                </div>
-
-                <div className={styles.checkboxGroup}>
-                  <input
-                    type="checkbox"
-                    id="isActive"
-                    checked={formData.isActive}
-                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                    className={styles.checkbox}
-                  />
-                  <label htmlFor="isActive" className={styles.checkboxLabel}>
-                    แสดงประกาศ
-                  </label>
-                </div>
-
-                <div className={styles.formActions}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowModal(false);
-                      resetForm();
-                    }}
-                    className={styles.cancelButton}
-                  >
-                    ยกเลิก
-                  </button>
-                  <button
-                    type="submit"
-                    className={styles.submitButton}
-                  >
-                    บันทึก
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
       </div>
-    </div>
+      <Footer />
+    </>
   );
 }

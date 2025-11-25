@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { Payment } from '@/models/Payment';
+import { Booking } from '@/models/Booking';
 import { ApiResponse } from '@/types';
 import { requireAuth, AuthRequest } from '@/middleware/auth';
 
@@ -16,11 +17,19 @@ export const GET = requireAuth(async (request: NextRequest) => {
     await connectDB();
 
     const user = (request as AuthRequest).user;
+    const { searchParams } = new URL(request.url);
+    const bookingId = searchParams.get('bookingId');
+
     const query: PaymentQuery = {};
 
     // Users can only see their own payments
     if (user?.role === 'user') {
       query.userId = user.userId;
+    }
+
+    // Filter by bookingId if provided
+    if (bookingId) {
+      query.bookingId = bookingId;
     }
 
     const payments = await Payment.find(query)
@@ -55,7 +64,7 @@ export const POST = requireAuth(async (request: NextRequest) => {
 
     const user = (request as AuthRequest).user;
     const body = await request.json();
-    const { bookingId, slipImage, ocrData } = body;
+    const { bookingId, slipImage, ocrData, qrData } = body;
 
     if (!bookingId || !slipImage) {
       return NextResponse.json<ApiResponse>(
@@ -67,12 +76,26 @@ export const POST = requireAuth(async (request: NextRequest) => {
       );
     }
 
-    // Create payment
+    // Get booking to fetch totalAmount
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return NextResponse.json<ApiResponse>(
+        {
+          success: false,
+          error: 'ไม่พบข้อมูลการจอง',
+        },
+        { status: 404 }
+      );
+    }
+
+    // Create payment with amount from booking
     const payment = await Payment.create({
       userId: user?.userId,
       bookingId,
+      amount: booking.totalAmount,
       slipImage,
-      ocrData,
+      ocrData: ocrData || qrData,
       status: 'pending',
       type: 'deposit',
     });

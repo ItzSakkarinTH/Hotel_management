@@ -6,7 +6,7 @@ import axios from 'axios';
 import Image from 'next/image';
 import { IRoom, SlipData } from '@/types';
 import SlipReaderIntegrated from '@/components/SlipReader';
-import styles from './BookingPage.module.css';
+import styles from './AdminBookingsPage.module.css';
 
 export default function BookingPage() {
   const router = useRouter();

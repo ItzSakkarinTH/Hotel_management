@@ -25,7 +25,7 @@ export default function Navbar({ isLoggedIn = false, isAdmin = false }: NavbarPr
       <div className={styles.container}>
         {/* Logo */}
         <Link href="/" className={styles.logo}>
-          <span className={styles.logoIcon}>🎂</span>
+          <span className={styles.logoIcon}>🏨</span>
           <span className={styles.logoText}>Hotel Management</span>
         </Link>
 

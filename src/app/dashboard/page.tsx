@@ -184,7 +184,7 @@ export default function UserDashboard() {
             <div className={styles.statContent}>
               <div>
                 <p className={styles.statLabel}>ประกาศใหม่</p>
-                <p className={styles.statValueIndigo}>
+                <p className={styles.statValueGold}>
                   {stats.announcements.length} รายการ
                 </p>
               </div>
@@ -235,7 +235,7 @@ export default function UserDashboard() {
           <div className={styles.card}>
             <h2 className={styles.cardTitle}>เมนูด่วน</h2>
             <div className={styles.menuList}>
-              <Link href="/rooms" className={styles.menuItemIndigo}>
+              <Link href="/rooms" className={styles.menuItemGold}>
                 <div className={styles.menuItemContent}>
                   <span className={styles.menuIcon}>🏨</span>
                   <span className={styles.menuText}>ดูห้องพักว่าง</span>

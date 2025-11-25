@@ -109,13 +109,13 @@ export default function PublicDashboard() {
 
               <div className={styles.statCard}>
                 <div className={styles.statIconWrapper}>
-                  <div className={`${styles.statIconCircle} ${styles.statIconIndigo}`}>
+                  <div className={styles.statIconCircle}>
                     <span className={styles.statIconLarge}>💰</span>
                   </div>
                 </div>
                 <div className={styles.statContent}>
                   <p className={styles.statLabel}>ราคาเริ่มต้น</p>
-                  <p className={`${styles.statValue} ${styles.statValueIndigo}`}>
+                  <p className={styles.statValue}>
                     {stats.startingPrice.toLocaleString()}
                   </p>
                   <p className={styles.statUnit}>บาท/เดือน</p>

@@ -56,8 +56,8 @@ export default function Navbar({ isLoggedIn = false, isAdmin = false }: NavbarPr
                   <Link href="/admin/bookings" className={styles.navLink}>
                     จัดการการจอง
                   </Link>
-                  <Link href="/admin/payments" className={styles.navLink}>
-                    จัดการการชำระเงิน
+                  <Link href="/admin/announcements" className={styles.navLink}>
+                    จัดการการประกาศ
                   </Link>
                 </>
               )}
@@ -120,8 +120,8 @@ export default function Navbar({ isLoggedIn = false, isAdmin = false }: NavbarPr
                   <Link href="/admin/bookings" className={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>
                     จัดการการจอง
                   </Link>
-                  <Link href="/admin/payments" className={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>
-                    จัดการการชำระเงิน
+                  <Link href="/admin/announcements" className={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>
+                    จัดการการประกาศ
                   </Link>
                 </>
               )}

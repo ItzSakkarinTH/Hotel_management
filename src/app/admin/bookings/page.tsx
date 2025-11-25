@@ -222,9 +222,6 @@ export default function AdminBookingsPage() {
     <>
       <Navbar isLoggedIn={true} isAdmin={true} />
       <div className={styles.container}>
-        <div style={{ marginBottom: '1rem' }}>
-          <BackButton />
-        </div>
         <div className={styles.header}>
           <h1 className={styles.title}>จัดการการจองและชำระเงิน</h1>
         </div>

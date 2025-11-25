@@ -52,6 +52,18 @@ export enum BookingStatus {
   COMPLETED = 'completed'
 }
 
+export enum PaymentStatus {
+  PENDING = 'pending',
+  VERIFIED = 'verified',
+  REJECTED = 'rejected'
+}
+
+export enum PaymentType {
+  DEPOSIT = 'deposit',
+  RENT = 'rent',
+  UTILITIES = 'utilities'
+}
+
 export interface IBooking {
   _id: string;
   userId: string;
@@ -63,22 +75,9 @@ export interface IBooking {
   status: BookingStatus;
   createdAt: Date;
   updatedAt: Date;
+  // optional populated room details for UI
+  room?: IRoom;
 }
-
-// Payment Types
-export enum PaymentType {
-  DEPOSIT = 'deposit',
-  RENT = 'rent',
-  UTILITIES = 'utilities'
-}
-
-export enum PaymentStatus {
-  PENDING = 'pending',
-  VERIFIED = 'verified',
-  REJECTED = 'rejected'
-}
-
-// Slip Reader Types
 export interface QRData {
   merchantID: string;
   amount: string;

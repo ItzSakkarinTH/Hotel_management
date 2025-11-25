@@ -20,8 +20,12 @@
 
 .title {
   font-size: 1.875rem;
-  font-weight: bold;
+  font-weight: 800;
   color: #111827;
+  background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .createButton {

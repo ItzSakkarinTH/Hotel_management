@@ -104,7 +104,8 @@ export interface SlipData {
 
 export interface IPayment {
   _id: string;
-  bookingId: string;
+  bookingId?: string;
+  utilityBillId?: string;
   userId: string;
   amount: number;
   type: PaymentType;

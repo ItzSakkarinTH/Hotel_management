@@ -8,7 +8,6 @@ import { PaymentStatus } from '@/types';
 import styles from './AdminBookingsPage.module.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import BackButton from '@/components/BackButton';
 
 interface IUser {
   _id: string;

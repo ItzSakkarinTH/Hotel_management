@@ -8,7 +8,6 @@ import styles from './UserDashboard.module.css';
 import { IAnnouncement } from '@/types';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import BackButton from '@/components/BackButton';
 
 interface UserData {
   _id: string;
@@ -127,10 +126,6 @@ export default function UserDashboard() {
       <Navbar isLoggedIn={true} />
       <div className={styles.container}>
         <div className={styles.content}>
-          <div style={{ marginBottom: '1rem' }}>
-            <BackButton />
-          </div>
-
           <div className={styles.headerInfo} style={{ marginBottom: '2rem' }}>
             <div>
               <h1 className={styles.headerTitle}>
@@ -289,7 +284,7 @@ export default function UserDashboard() {
           </div>
         </div>
       </div>
-      <Footer />
+      <Footer/>
     </>
   );
 }

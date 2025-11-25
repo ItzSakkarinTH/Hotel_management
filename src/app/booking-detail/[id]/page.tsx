@@ -156,14 +156,13 @@ export default function BookingDetailPage() {
             <Navbar isLoggedIn={true} />
             <div className={styles.container}>
                 <div className={styles.maxWidth}>
-                    <div style={{ marginBottom: '1rem' }}>
-                        <BackButton />
-                    </div>
                     {/* Header */}
                     <div className={styles.header}>
                         <h1 className={styles.title}>รายละเอียดการจอง</h1>
                     </div>
-
+                    <div style={{ marginBottom: '1rem' }}>
+                        <BackButton />
+                    </div>
                     {/* Booking Status */}
                     <div className={styles.statusCard}>
                         <div className={styles.statusHeader}>

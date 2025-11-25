@@ -90,13 +90,12 @@ export default function BookingHistoryPage() {
       <Navbar isLoggedIn={true} />
       <div className={styles.container}>
         <div className={styles.maxWidth}>
-          <div style={{ marginBottom: '1rem' }}>
-            <BackButton />
-          </div>
           <div className={styles.header}>
             <h1 className={styles.title}>ประวัติการจอง</h1>
           </div>
-
+          <div style={{ marginBottom: '1rem' }}>
+            <BackButton />
+          </div>
           {error && (
             <div className={styles.errorBanner}>
               {error}

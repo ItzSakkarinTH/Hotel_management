@@ -7,7 +7,7 @@ import Link from 'next/link';
 import styles from './AdminDashboard.module.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import BackButton from '@/components/BackButton';
+
 
 interface DashboardStats {
   totalRooms: number;
@@ -149,12 +149,6 @@ export default function AdminDashboard() {
               link="/admin/rooms-management?status=occupied"
             />
             <StatCard
-              title="การจองที่รอดำเนินการ"
-              value={stats.activeBookings}
-              color="borderYellow"
-              link="/admin/bookings"
-            />
-            <StatCard
               title="สลิปรอตรวจสอบ"
               value={stats.pendingPayments}
               color="borderPurple"
@@ -178,10 +172,13 @@ export default function AdminDashboard() {
               <Link href="/admin/bookings" className={styles.actionGreen}>
                 <span className={styles.actionText}>จัดการการจอง</span>
               </Link>
-              <Link href="/admin/payments" className={styles.actionPurple}>
+              <Link href="/admin/utilities" className={styles.actionPurple}>
+                <span className={styles.actionText}>จัดการค่าน้ำค่าไฟ</span>
+              </Link>
+              <Link href="/admin/payments" className={styles.actionOrange}>
                 <span className={styles.actionText}>ตรวจสอบสลิป</span>
               </Link>
-              <Link href="/admin/announcements" className={styles.actionOrange}>
+              <Link href="/admin/announcements" className={styles.actionIndigo}>
                 <span className={styles.actionText}>ประกาศข่าวสาร</span>
               </Link>
             </div>

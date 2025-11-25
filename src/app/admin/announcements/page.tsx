@@ -6,7 +6,7 @@ import { IAnnouncement } from '@/types';
 import styles from './AdminAnnouncements.module.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import BackButton from '@/components/BackButton';
+
 
 export default function AdminAnnouncementsPage() {
   const [announcements, setAnnouncements] = useState<IAnnouncement[]>([]);

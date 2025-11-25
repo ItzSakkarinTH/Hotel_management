@@ -79,12 +79,11 @@ export default function RoomsPage() {
       <Navbar isLoggedIn={isLoggedIn} />
       <div className={styles.container}>
         <div className={styles.wrapper}>
-          <div style={{ marginBottom: '1rem' }}>
-            <BackButton />
-          </div>
           <div className={styles.header}>
             <h1 className={styles.title}>รายการห้องพัก</h1>
-
+            <div style={{ marginBottom: '1rem' }}>
+              <BackButton />
+            </div>
             {/* Filter */}
             <div className={styles.filterContainer}>
               <button

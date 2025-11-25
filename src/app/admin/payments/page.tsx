@@ -7,7 +7,6 @@ import { IPayment, PaymentStatus, AxiosErrorResponse } from '@/types';
 import styles from './AdminPayments.module.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import BackButton from '@/components/BackButton';
 
 interface BookingInfo {
   _id: string;

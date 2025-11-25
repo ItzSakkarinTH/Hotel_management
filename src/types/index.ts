@@ -66,8 +66,8 @@ export enum PaymentType {
 
 export interface IBooking {
   _id: string;
-  userId: string;
-  roomId: string;
+  userId: string | Partial<IUser>;
+  roomId: string | Partial<IRoom>;
   checkInDate: Date;
   checkOutDate?: Date;
   totalAmount: number;
@@ -75,8 +75,6 @@ export interface IBooking {
   status: BookingStatus;
   createdAt: Date;
   updatedAt: Date;
-  // optional populated room details for UI
-  room?: IRoom;
 }
 export interface QRData {
   merchantID: string;

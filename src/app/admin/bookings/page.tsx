@@ -1,123 +1,118 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
 import axios from 'axios';
-import Image from 'next/image';
-import { IRoom, SlipData } from '@/types';
-import SlipReaderIntegrated from '@/components/SlipReader';
+import { useRouter } from 'next/navigation';
 import styles from './AdminBookingsPage.module.css';
 
-export default function BookingPage() {
-  const router = useRouter();
-  const params = useParams();
-  const roomId = params.id as string;
+interface IUser {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+}
 
-  const [room, setRoom] = useState<IRoom | null>(null);
+interface IRoom {
+  _id: string;
+  roomNumber: string;
+  price: number;
+  deposit: number;
+}
+
+interface IBooking {
+  _id: string;
+  userId: IUser | null;
+  roomId: IRoom | null;
+  checkInDate: string;
+  status: 'pending' | 'confirmed' | 'cancelled';
+  createdAt: string;
+}
+
+export default function AdminBookingsPage() {
+  const router = useRouter();
+  const [bookings, setBookings] = useState<IBooking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [checkInDate, setCheckInDate] = useState('');
-  const [slipData, setSlipData] = useState<SlipData | null>(null);
-  const [step, setStep] = useState(1);
-  const [bookingId, setBookingId] = useState<string>('');
   const [error, setError] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'cancelled'>('all');
 
   useEffect(() => {
-    if (roomId) {
-      fetchRoom();
-    }
-  }, [roomId]);
+    fetchBookings();
+  }, []);
 
-  const fetchRoom = async () => {
+  const fetchBookings = async () => {
     try {
-      const response = await axios.get(`/api/rooms/${roomId}`);
-      setRoom(response.data.data);
-    } catch (error) {
-      setError('ไม่พบข้อมูลห้องพัก');
+      const token = localStorage.getItem('token');
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+
+      const response = await axios.get('/api/bookings', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.data.success) {
+        setBookings(response.data.data);
+      }
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } } };
+      setError(err.response?.data?.error || 'เกิดข้อผิดพลาด');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleBooking = async () => {
-    if (!checkInDate) {
-      setError('กรุณาเลือกวันเข้าพัก');
-      return;
-    }
-
-    setSubmitting(true);
-    setError('');
-
+  const handleStatusChange = async (bookingId: string, newStatus: 'confirmed' | 'cancelled') => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post(
-        '/api/bookings',
-        {
-          roomId,
-          checkInDate,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      const response = await axios.patch(
+        `/api/bookings/${bookingId}`,
+        { status: newStatus },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (response.data.success) {
-        setBookingId(response.data.data._id);
-        setStep(3);
+        // Update local state
+        setBookings(bookings.map(booking =>
+          booking._id === bookingId
+            ? { ...booking, status: newStatus }
+            : booking
+        ));
       }
     } catch (error: unknown) {
-      const e = error as { response?: { data?: { error?: string } } };
-      alert(e.response?.data?.error || 'เกิดข้อผิดพลาด');
-    } finally {
-      setSubmitting(false);
+      const err = error as { response?: { data?: { error?: string } } };
+      alert(err.response?.data?.error || 'เกิดข้อผิดพลาด');
     }
   };
 
-  // Callback เมื่อสลิปผ่านการตรวจสอบแล้ว
-  const handleSlipVerified = (data: SlipData) => {
-    setSlipData(data);
-    setError(''); // ล้าง error
-  };
+  const filteredBookings = bookings.filter(booking =>
+    filter === 'all' ? true : booking.status === filter
+  );
 
-  // Callback เมื่อเกิด error
-  const handleSlipError = (errorMsg: string) => {
-    setError(errorMsg);
-    setSlipData(null);
-  };
-
-  const handlePaymentSubmit = async () => {
-    if (!slipData) {
-      setError('กรุณาอัพโหลดสลิปการโอนเงิน');
-      return;
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return styles.statusPending;
+      case 'confirmed':
+        return styles.statusConfirmed;
+      case 'cancelled':
+        return styles.statusCancelled;
+      default:
+        return '';
     }
+  };
 
-    setSubmitting(true);
-    setError('');
-
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        '/api/payments',
-        {
-          bookingId,
-          slipImage: slipData.slipImage,
-          ocrData: slipData.ocrData,
-          qrData: slipData.qrData,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      if (response.data.success) {
-        alert('ส่งสลิปการโอนเงินสำเร็จ! รอการตรวจสอบจากผู้ดูแลระบบ');
-        router.push('/dashboard');
-      }
-    } catch (error: unknown) {
-      const e = error as { response?: { data?: { error?: string } } };
-      alert(e.response?.data?.error || 'เกิดข้อผิดพลาด');
-    } finally {
-      setSubmitting(false);
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'รอการยืนยัน';
+      case 'confirmed':
+        return 'ยืนยันแล้ว';
+      case 'cancelled':
+        return 'ยกเลิกแล้ว';
+      default:
+        return status;
     }
   };
 
@@ -129,198 +124,127 @@ export default function BookingPage() {
     );
   }
 
-  if (!room) {
-    return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.errorText}>ไม่พบข้อมูลห้องพัก</div>
-      </div>
-    );
-  }
-
-  const totalAmount = room.price + room.deposit;
-
   return (
     <div className={styles.container}>
-      <div className={styles.maxWidth}>
-        {/* Progress Steps */}
-        <div className={styles.progressContainer}>
-          <div className={styles.progressSteps}>
-            <div className={`${styles.stepItem} ${step >= 1 ? styles.stepItemActive : styles.stepItemInactive}`}>
-              <div className={`${styles.stepCircle} ${step >= 1 ? styles.stepCircleActive : styles.stepCircleInactive}`}>
-                1
-              </div>
-              <span className={styles.stepLabel}>ข้อมูลห้อง</span>
-            </div>
-            <div className={`${styles.stepLine} ${step >= 2 ? styles.stepLineActive : styles.stepLineInactive}`}></div>
-            <div className={`${styles.stepItem} ${step >= 2 ? styles.stepItemActive : styles.stepItemInactive}`}>
-              <div className={`${styles.stepCircle} ${step >= 2 ? styles.stepCircleActive : styles.stepCircleInactive}`}>
-                2
-              </div>
-              <span className={styles.stepLabel}>ยืนยันการจอง</span>
-            </div>
-            <div className={`${styles.stepLine} ${step >= 3 ? styles.stepLineActive : styles.stepLineInactive}`}></div>
-            <div className={`${styles.stepItem} ${step >= 3 ? styles.stepItemActive : styles.stepItemInactive}`}>
-              <div className={`${styles.stepCircle} ${step >= 3 ? styles.stepCircleActive : styles.stepCircleInactive}`}>
-                3
-              </div>
-              <span className={styles.stepLabel}>ชำระเงิน</span>
-            </div>
-          </div>
+      <div className={styles.header}>
+        <h1 className={styles.title}>จัดการการจอง</h1>
+      </div>
+
+      {error && (
+        <div className={styles.errorBanner}>
+          {error}
         </div>
+      )}
 
-        {error && (
-          <div className={styles.errorBanner}>
-            {error}
+      {/* Filter Tabs */}
+      <div className={styles.filterTabs}>
+        <button
+          onClick={() => setFilter('all')}
+          className={`${styles.filterTab} ${filter === 'all' ? styles.filterTabActive : ''}`}
+        >
+          ทั้งหมด ({bookings.length})
+        </button>
+        <button
+          onClick={() => setFilter('pending')}
+          className={`${styles.filterTab} ${filter === 'pending' ? styles.filterTabActive : ''}`}
+        >
+          รอการยืนยัน ({bookings.filter(b => b.status === 'pending').length})
+        </button>
+        <button
+          onClick={() => setFilter('confirmed')}
+          className={`${styles.filterTab} ${filter === 'confirmed' ? styles.filterTabActive : ''}`}
+        >
+          ยืนยันแล้ว ({bookings.filter(b => b.status === 'confirmed').length})
+        </button>
+        <button
+          onClick={() => setFilter('cancelled')}
+          className={`${styles.filterTab} ${filter === 'cancelled' ? styles.filterTabActive : ''}`}
+        >
+          ยกเลิกแล้ว ({bookings.filter(b => b.status === 'cancelled').length})
+        </button>
+      </div>
+
+      {/* Bookings Table */}
+      <div className={styles.tableContainer}>
+        {filteredBookings.length === 0 ? (
+          <div className={styles.emptyState}>
+            <p>ไม่มีข้อมูลการจอง</p>
           </div>
-        )}
-
-        <div className={styles.card}>
-          {/* Step 1 & 2: Room Info */}
-          {step <= 2 && (
-            <>
-              <h1 className={styles.title}>
-                จองห้อง {room.roomNumber}
-              </h1>
-
-              {room.images && room.images.length > 0 && (
-                <div className={styles.roomImageContainer}>
-                  <Image
-                    src={room.images[0]}
-                    alt={`ห้อง ${room.roomNumber}`}
-                    fill
-                    className={styles.roomImage}
-                  />
-                </div>
-              )}
-
-              <div className={styles.detailsGrid}>
-                <div className={styles.detailItem}>
-                  <p className={styles.detailLabel}>ราคา/เดือน</p>
-                  <p className={styles.detailPrice}>
-                    {room.price.toLocaleString()} บาท
-                  </p>
-                </div>
-                <div className={styles.detailItem}>
-                  <p className={styles.detailLabel}>เงินประกัน</p>
-                  <p className={styles.detailValue}>
-                    {room.deposit.toLocaleString()} บาท
-                  </p>
-                </div>
-                <div className={styles.detailItem}>
-                  <p className={styles.detailLabel}>ค่าน้ำ</p>
-                  <p className={styles.detailValueRegular}>{room.waterRate} บาท/หน่วย</p>
-                </div>
-                <div className={styles.detailItem}>
-                  <p className={styles.detailLabel}>ค่าไฟ</p>
-                  <p className={styles.detailValueRegular}>{room.electricityRate} บาท/หน่วย</p>
-                </div>
-              </div>
-
-              <div className={styles.dateContainer}>
-                <label className={styles.label}>
-                  วันที่เข้าพัก
-                </label>
-                <input
-                  type="date"
-                  value={checkInDate}
-                  onChange={(e) => setCheckInDate(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                  className={styles.dateInput}
-                />
-              </div>
-
-              <div className={styles.summary}>
-                <h3 className={styles.summaryTitle}>สรุปการชำระเงิน</h3>
-                <div className={styles.summaryItems}>
-                  <div className={styles.summaryRow}>
-                    <span>ค่าห้องเดือนแรก</span>
-                    <span>{room.price.toLocaleString()} บาท</span>
-                  </div>
-                  <div className={styles.summaryRow}>
-                    <span>เงินประกัน</span>
-                    <span>{room.deposit.toLocaleString()} บาท</span>
-                  </div>
-                  <div className={styles.summaryTotal}>
-                    <span>รวมทั้งสิ้น</span>
-                    <span className={styles.summaryTotalAmount}>
-                      {totalAmount.toLocaleString()} บาท
+        ) : (
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>รหัสการจอง</th>
+                <th>ผู้จอง</th>
+                <th>เบอร์โทร</th>
+                <th>ห้อง</th>
+                <th>ราคา</th>
+                <th>วันเข้าพัก</th>
+                <th>วันที่จอง</th>
+                <th>สถานะ</th>
+                <th>จัดการ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredBookings.map((booking) => (
+                <tr key={booking._id}>
+                  <td className={styles.bookingId}>{booking._id.slice(-8)}</td>
+                  <td>
+                    {booking.userId ? (
+                      <>
+                        <div className={styles.userName}>
+                          {booking.userId.firstName} {booking.userId.lastName}
+                        </div>
+                        <div className={styles.userEmail}>{booking.userId.email}</div>
+                      </>
+                    ) : (
+                      <span>N/A</span>
+                    )}
+                  </td>
+                  <td>{booking.userId?.phoneNumber || 'N/A'}</td>
+                  <td className={styles.roomNumber}>{booking.roomId?.roomNumber || 'N/A'}</td>
+                  <td className={styles.price}>
+                    {booking.roomId
+                      ? ((booking.roomId.price + booking.roomId.deposit).toLocaleString() + ' ฿')
+                      : 'N/A'}
+                  </td>
+                  <td>{new Date(booking.checkInDate).toLocaleDateString('th-TH')}</td>
+                  <td>{new Date(booking.createdAt).toLocaleDateString('th-TH')}</td>
+                  <td>
+                    <span className={`${styles.statusBadge} ${getStatusBadgeClass(booking.status)}`}>
+                      {getStatusText(booking.status)}
                     </span>
-                  </div>
-                </div>
-              </div>
-
-              {step === 1 && (
-                <button
-                  onClick={() => setStep(2)}
-                  className={`${styles.button} ${styles.buttonPrimary}`}
-                >
-                  ต่อไป
-                </button>
-              )}
-
-              {step === 2 && (
-                <div className={styles.buttonGroup}>
-                  <button
-                    onClick={() => setStep(1)}
-                    className={`${styles.buttonFlex} ${styles.buttonSecondary}`}
-                  >
-                    ย้อนกลับ
-                  </button>
-                  <button
-                    onClick={handleBooking}
-                    disabled={submitting}
-                    className={`${styles.buttonFlex} ${styles.buttonPrimary}`}
-                  >
-                    {submitting ? 'กำลังจอง...' : 'ยืนยันการจอง'}
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Step 3: Upload Slip with OCR */}
-          {step === 3 && (
-            <>
-              <h1 className={styles.title}>
-                ชำระเงิน
-              </h1>
-
-              <div className={styles.infoBanner}>
-                <p>กรุณาโอนเงินมายังบัญชี:</p>
-                <p>ธนาคาร: ธนาคารกสิกรไทย</p>
-                <p>เลขที่บัญชี: 123-4-56789-0</p>
-                <p>ชื่อบัญชี: หอพักนักศึกษา ABC</p>
-                <p className={styles.infoAmount}>
-                  จำนวนเงิน: {totalAmount.toLocaleString()} บาท
-                </p>
-              </div>
-
-              {/* ใช้ SlipReader Component */}
-              <SlipReaderIntegrated
-                expectedAmount={totalAmount}
-                onSlipVerified={handleSlipVerified}
-                onError={handleSlipError}
-              />
-
-              <div className={styles.buttonGroup}>
-                <button
-                  onClick={() => setStep(2)}
-                  disabled={submitting}
-                  className={`${styles.buttonFlex} ${styles.buttonSecondary}`}
-                >
-                  ย้อนกลับ
-                </button>
-                <button
-                  onClick={handlePaymentSubmit}
-                  disabled={!slipData || submitting}
-                  className={`${styles.buttonFlex} ${styles.buttonPrimary}`}
-                >
-                  {submitting ? 'กำลังส่ง...' : 'ยืนยันการชำระเงิน'}
-                </button>
-              </div>
-            </>
-          )}
-        </div>
+                  </td>
+                  <td>
+                    <div className={styles.actionButtons}>
+                      {booking.status === 'pending' && (
+                        <>
+                          <button
+                            onClick={() => handleStatusChange(booking._id, 'confirmed')}
+                            className={`${styles.actionBtn} ${styles.confirmBtn}`}
+                            title="อนุมัติ"
+                          >
+                            ✓
+                          </button>
+                          <button
+                            onClick={() => handleStatusChange(booking._id, 'cancelled')}
+                            className={`${styles.actionBtn} ${styles.cancelBtn}`}
+                            title="ยกเลิก"
+                          >
+                            ✗
+                          </button>
+                        </>
+                      )}
+                      {booking.status !== 'pending' && (
+                        <span className={styles.noAction}>-</span>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

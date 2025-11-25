@@ -46,7 +46,7 @@ export default function BookingHistoryPage() {
         { status: 'cancelled' },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
+
       alert('ยกเลิกการจองสำเร็จ');
       fetchBookings();
     } catch (error: unknown) {
@@ -134,78 +134,85 @@ export default function BookingHistoryPage() {
           </div>
         ) : (
           <div className={styles.bookingsList}>
-            {filteredBookings.map((booking) => (
-              <div key={booking._id} className={styles.bookingCard}>
-                <div className={styles.bookingHeader}>
-                  <div className={styles.bookingInfo}>
-                    <h3 className={styles.roomNumber}>
-                      ห้อง {booking.room?.roomNumber || 'N/A'}
-                    </h3>
-                    <span className={`${styles.statusBadge} ${styles[getStatusClass(booking.status)]}`}>
-                      {getStatusText(booking.status)}
-                    </span>
-                  </div>
-                  <p className={styles.bookingDate}>
-                    จองเมื่อ: {new Date(booking.createdAt).toLocaleDateString('th-TH')}
-                  </p>
-                </div>
+            {filteredBookings.map((booking) => {
+              // roomId can be a string or populated object
+              const roomData = typeof booking.roomId === 'string' ? null : booking.roomId;
 
-                {booking.room?.images && booking.room.images.length > 0 && (
-                  <div className={styles.roomImageContainer}>
-                    <Image
-                      src={booking.room.images[0]}
-                      alt={`ห้อง ${booking.room.roomNumber}`}
-                      fill
-                      className={styles.roomImage}
-                    />
+              return (
+                <div key={booking._id} className={styles.bookingCard}>
+                  <div className={styles.bookingHeader}>
+                    <div className={styles.bookingInfo}>
+                      <h3 className={styles.roomNumber}>
+                        ห้อง {roomData?.roomNumber || 'N/A'}
+                      </h3>
+                      <span className={`${styles.statusBadge} ${styles[getStatusClass(booking.status)]}`}>
+                        {getStatusText(booking.status)}
+                      </span>
+                    </div>
+                    <p className={styles.bookingDate}>
+                      จองเมื่อ: {new Date(booking.createdAt).toLocaleDateString('th-TH')}
+                    </p>
                   </div>
-                )}
 
-                <div className={styles.bookingDetails}>
-                  <div className={styles.detailRow}>
-                    <span className={styles.detailLabel}>วันที่เข้าพัก:</span>
-                    <span className={styles.detailValue}>
-                      {new Date(booking.checkInDate).toLocaleDateString('th-TH')}
-                    </span>
-                  </div>
-                  <div className={styles.detailRow}>
-                    <span className={styles.detailLabel}>ค่าห้อง:</span>
-                    <span className={styles.detailValue}>
-                      {booking.room?.price.toLocaleString()} บาท
-                    </span>
-                  </div>
-                  <div className={styles.detailRow}>
-                    <span className={styles.detailLabel}>เงินประกัน:</span>
-                    <span className={styles.detailValue}>
-                      {booking.room?.deposit.toLocaleString()} บาท
-                    </span>
-                  </div>
-                  <div className={styles.detailRow}>
-                    <span className={styles.detailLabel}>ยอดรวม:</span>
-                    <span className={styles.detailValueTotal}>
-                      {((booking.room?.price || 0) + (booking.room?.deposit || 0)).toLocaleString()} บาท
-                    </span>
-                  </div>
-                </div>
-
-                <div className={styles.bookingActions}>
-                  <button
-                    onClick={() => router.push(`/booking/${booking._id}`)}
-                    className={styles.viewButton}
-                  >
-                    ดูรายละเอียด
-                  </button>
-                  {booking.status === 'pending' && (
-                    <button
-                      onClick={() => handleCancelBooking(booking._id)}
-                      className={styles.cancelButton}
-                    >
-                      ยกเลิกการจอง
-                    </button>
+                  {roomData?.images && roomData.images.length > 0 && (
+                    <div className={styles.roomImageContainer}>
+                      <Image
+                        src={roomData.images[0]}
+                        alt={`ห้อง ${roomData.roomNumber}`}
+                        fill
+                        className={styles.roomImage}
+                      />
+                    </div>
                   )}
+
+                  <div className={styles.bookingDetails}>
+                    <div className={styles.detailRow}>
+                      <span className={styles.detailLabel}>วันที่เข้าพัก:</span>
+                      <span className={styles.detailValue}>
+                        {new Date(booking.checkInDate).toLocaleDateString('th-TH')}
+                      </span>
+                    </div>
+                    <div className={styles.detailRow}>
+                      <span className={styles.detailLabel}>ค่าห้อง:</span>
+                      <span className={styles.detailValue}>
+                        {roomData?.price?.toLocaleString() || 'N/A'} บาท
+                      </span>
+                    </div>
+                    <div className={styles.detailRow}>
+                      <span className={styles.detailLabel}>เงินประกัน:</span>
+                      <span className={styles.detailValue}>
+                        {roomData?.deposit?.toLocaleString() || 'N/A'} บาท
+                      </span>
+                    </div>
+                    <div className={styles.detailRow}>
+                      <span className={styles.detailLabel}>ยอดรวม:</span>
+                      <span className={styles.detailValueTotal}>
+                        {roomData
+                          ? ((roomData.price || 0) + (roomData.deposit || 0)).toLocaleString()
+                          : 'N/A'} บาท
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className={styles.bookingActions}>
+                    <button
+                      onClick={() => router.push(`/booking-detail/${booking._id}`)}
+                      className={styles.viewButton}
+                    >
+                      ดูรายละเอียด
+                    </button>
+                    {booking.status === 'pending' && (
+                      <button
+                        onClick={() => handleCancelBooking(booking._id)}
+                        className={styles.cancelButton}
+                      >
+                        ยกเลิกการจอง
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

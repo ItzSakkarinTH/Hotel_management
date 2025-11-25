@@ -1,0 +1,322 @@
+.container {
+    min-height: 100vh;
+    background-color: #f9fafb;
+    padding: 2rem 1rem;
+}
+
+.content {
+    max-width: 72rem;
+    margin: 0 auto;
+}
+
+.title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 1.5rem;
+}
+
+.filterContainer {
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.filterButton {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.activeFilter {
+    background-color: #d4af37;
+    /* Gold */
+    color: white;
+    border-color: #d4af37;
+}
+
+.activeFilterUnpaid {
+    background-color: #ef4444;
+    color: white;
+    border-color: #ef4444;
+}
+
+.activeFilterPaid {
+    background-color: #10b981;
+    color: white;
+    border-color: #10b981;
+}
+
+.inactiveFilter {
+    background-color: white;
+    color: #374151;
+    border-color: #d1d5db;
+}
+
+.inactiveFilter:hover {
+    background-color: #f3f4f6;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.card {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    padding: 1.5rem;
+    transition: box-shadow 0.3s;
+}
+
+.card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.monthTitle {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.roomText {
+    font-size: 0.875rem;
+    color: #4b5563;
+}
+
+.badgePaid {
+    padding: 0.25rem 0.75rem;
+    background-color: #d1fae5;
+    color: #065f46;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 9999px;
+}
+
+.badgeUnpaid {
+    padding: 0.25rem 0.75rem;
+    background-color: #fee2e2;
+    color: #991b1b;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 9999px;
+}
+
+.detailsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.waterSection {
+    background-color: #eff6ff;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+}
+
+.electricSection {
+    background-color: #fefce8;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+}
+
+.detailRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+
+.detailLabelWater {
+    font-size: 0.875rem;
+    color: #1e3a8a;
+    font-weight: 500;
+}
+
+.detailValueWater {
+    font-size: 0.875rem;
+    color: #2563eb;
+}
+
+.costWater {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1e3a8a;
+    text-align: right;
+}
+
+.detailLabelElectric {
+    font-size: 0.875rem;
+    color: #713f12;
+    font-weight: 500;
+}
+
+.detailValueElectric {
+    font-size: 0.875rem;
+    color: #ca8a04;
+}
+
+.costElectric {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #713f12;
+    text-align: right;
+}
+
+.totalSection {
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.totalRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.totalLabel {
+    color: #374151;
+    font-weight: 500;
+}
+
+.totalValue {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #d4af37;
+    /* Gold */
+}
+
+.paidDate {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e5e7eb;
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-align: center;
+}
+
+.payButton {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.5rem;
+    background-color: #d4af37;
+    color: white;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.payButton:hover {
+    background-color: #bfa13a;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 3rem;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    color: #6b7280;
+    font-size: 1.125rem;
+}
+
+.summaryCard {
+    margin-top: 2rem;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+}
+
+.summaryGrid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .summaryGrid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.summaryItem {
+    background-color: #f9fafb;
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+.summaryItemUnpaid {
+    background-color: #fef2f2;
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+.summaryItemPaid {
+    background-color: #ecfdf5;
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+.summaryLabel {
+    font-size: 0.875rem;
+    color: #4b5563;
+    margin-bottom: 0.25rem;
+}
+
+.summaryValue {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.summaryValueUnpaid {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #7f1d1d;
+}
+
+.summaryValuePaid {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #064e3b;
+}
+
+.loadingContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.loadingText {
+    font-size: 1.25rem;
+    color: #4b5563;
+}

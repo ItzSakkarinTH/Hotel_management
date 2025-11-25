@@ -6,6 +6,9 @@ import axios from 'axios';
 import Link from 'next/link';
 import styles from './UserDashboard.module.css';
 import { IAnnouncement } from '@/types';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import BackButton from '@/components/BackButton';
 
 interface UserData {
   _id: string;
@@ -111,11 +114,6 @@ export default function UserDashboard() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.clear();
-    router.push('/login');
-  };
-
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -125,173 +123,173 @@ export default function UserDashboard() {
   }
 
   return (
-    <div className={styles.container}>
-      {/* Header */}
-      <div className={styles.header}>
-        <div className={styles.headerContent}>
-          <div className={styles.headerInfo}>
+    <>
+      <Navbar isLoggedIn={true} />
+      <div className={styles.container}>
+        <div className={styles.content}>
+          <div style={{ marginBottom: '1rem' }}>
+            <BackButton />
+          </div>
+
+          <div className={styles.headerInfo} style={{ marginBottom: '2rem' }}>
             <div>
               <h1 className={styles.headerTitle}>
                 สวัสดี, {user?.firstName} {user?.lastName}
               </h1>
               <p className={styles.headerEmail}>{user?.email}</p>
             </div>
-            <button onClick={handleLogout} className={styles.logoutBtn}>
-              ออกจากระบบ
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className={styles.content}>
-        {/* Quick Stats */}
-        <div className={styles.statsGrid}>
-          <div className={styles.statCard}>
-            <div className={styles.statContent}>
-              <div>
-                <p className={styles.statLabel}>สถานะการเข้าพัก</p>
-                {stats.currentBooking ? (
-                  <>
-                    <p className={styles.statValueGreen}>กำลังเข้าพัก</p>
-                    <p className={styles.statSubtext}>
-                      ห้อง {stats.currentBooking.roomId?.roomNumber}
-                    </p>
-                  </>
-                ) : (
-                  <p className={styles.statValueGray}>ยังไม่ได้เข้าพัก</p>
-                )}
-              </div>
-              <div className={styles.statIcon}>🏠</div>
-            </div>
           </div>
 
-          <div className={styles.statCard}>
-            <div className={styles.statContent}>
-              <div>
-                <p className={styles.statLabel}>บิลค้างชำระ</p>
-                <p className={styles.statValueRed}>
-                  {stats.unpaidBills} รายการ
-                </p>
-                <p className={styles.statSubtext}>
-                  {stats.totalUnpaid.toLocaleString()} บาท
-                </p>
-              </div>
-              <div className={styles.statIcon}>💳</div>
-            </div>
-          </div>
-
-          <div className={styles.statCard}>
-            <div className={styles.statContent}>
-              <div>
-                <p className={styles.statLabel}>ประกาศใหม่</p>
-                <p className={styles.statValueGold}>
-                  {stats.announcements.length} รายการ
-                </p>
-              </div>
-              <div className={styles.statIcon}>📢</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Current Booking */}
-        {stats.currentBooking && (
-          <div className={styles.bookingCard}>
-            <h2 className={styles.cardTitle}>ห้องพักปัจจุบัน</h2>
-            <div className={styles.bookingGrid}>
-              <div>
-                <p className={styles.fieldLabel}>เลขห้อง</p>
-                <p className={styles.fieldValue}>
-                  {stats.currentBooking.roomId?.roomNumber}
-                </p>
-              </div>
-              <div>
-                <p className={styles.fieldLabel}>ค่าห้อง/เดือน</p>
-                <p className={styles.fieldValue}>
-                  {stats.currentBooking.roomId?.price?.toLocaleString()} บาท
-                </p>
-              </div>
-              <div>
-                <p className={styles.fieldLabel}>วันเข้าพัก</p>
-                <p className={styles.fieldValue}>
-                  {new Date(stats.currentBooking.checkInDate).toLocaleDateString('th-TH')}
-                </p>
-              </div>
-              <div>
-                <p className={styles.fieldLabel}>สถานะ</p>
-                <span className={
-                  stats.currentBooking.status === 'confirmed'
-                    ? styles.badgeGreen
-                    : styles.badgeYellow
-                }>
-                  {stats.currentBooking.status === 'confirmed' ? 'ยืนยันแล้ว' : 'รอดำเนินการ'}
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className={styles.mainGrid}>
-          {/* Quick Actions */}
-          <div className={styles.card}>
-            <h2 className={styles.cardTitle}>เมนูด่วน</h2>
-            <div className={styles.menuList}>
-              <Link href="/rooms" className={styles.menuItemGold}>
-                <div className={styles.menuItemContent}>
-                  <span className={styles.menuIcon}>🏨</span>
-                  <span className={styles.menuText}>ดูห้องพักว่าง</span>
+          {/* Quick Stats */}
+          <div className={styles.statsGrid}>
+            <div className={styles.statCard}>
+              <div className={styles.statContent}>
+                <div>
+                  <p className={styles.statLabel}>สถานะการเข้าพัก</p>
+                  {stats.currentBooking ? (
+                    <>
+                      <p className={styles.statValueGreen}>กำลังเข้าพัก</p>
+                      <p className={styles.statSubtext}>
+                        ห้อง {stats.currentBooking.roomId?.roomNumber}
+                      </p>
+                    </>
+                  ) : (
+                    <p className={styles.statValueGray}>ยังไม่ได้เข้าพัก</p>
+                  )}
                 </div>
-                <span className={styles.menuArrow}>→</span>
-              </Link>
+                <div className={styles.statIcon}>🏠</div>
+              </div>
+            </div>
 
-              <Link href="/utilities" className={styles.menuItemBlue}>
-                <div className={styles.menuItemContent}>
-                  <span className={styles.menuIcon}>💡</span>
-                  <span className={styles.menuText}>ค่าน้ำค่าไฟ</span>
+            <div className={styles.statCard}>
+              <div className={styles.statContent}>
+                <div>
+                  <p className={styles.statLabel}>บิลค้างชำระ</p>
+                  <p className={styles.statValueRed}>
+                    {stats.unpaidBills} รายการ
+                  </p>
+                  <p className={styles.statSubtext}>
+                    {stats.totalUnpaid.toLocaleString()} บาท
+                  </p>
                 </div>
-                {stats.unpaidBills > 0 && (
-                  <span className={styles.badge}>
-                    {stats.unpaidBills}
+                <div className={styles.statIcon}>💳</div>
+              </div>
+            </div>
+
+            <div className={styles.statCard}>
+              <div className={styles.statContent}>
+                <div>
+                  <p className={styles.statLabel}>ประกาศใหม่</p>
+                  <p className={styles.statValueGold}>
+                    {stats.announcements.length} รายการ
+                  </p>
+                </div>
+                <div className={styles.statIcon}>📢</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Current Booking */}
+          {stats.currentBooking && (
+            <div className={styles.bookingCard}>
+              <h2 className={styles.cardTitle}>ห้องพักปัจจุบัน</h2>
+              <div className={styles.bookingGrid}>
+                <div>
+                  <p className={styles.fieldLabel}>เลขห้อง</p>
+                  <p className={styles.fieldValue}>
+                    {stats.currentBooking.roomId?.roomNumber}
+                  </p>
+                </div>
+                <div>
+                  <p className={styles.fieldLabel}>ค่าห้อง/เดือน</p>
+                  <p className={styles.fieldValue}>
+                    {stats.currentBooking.roomId?.price?.toLocaleString()} บาท
+                  </p>
+                </div>
+                <div>
+                  <p className={styles.fieldLabel}>วันเข้าพัก</p>
+                  <p className={styles.fieldValue}>
+                    {new Date(stats.currentBooking.checkInDate).toLocaleDateString('th-TH')}
+                  </p>
+                </div>
+                <div>
+                  <p className={styles.fieldLabel}>สถานะ</p>
+                  <span className={
+                    stats.currentBooking.status === 'confirmed'
+                      ? styles.badgeGreen
+                      : styles.badgeYellow
+                  }>
+                    {stats.currentBooking.status === 'confirmed' ? 'ยืนยันแล้ว' : 'รอดำเนินการ'}
                   </span>
-                )}
-              </Link>
+                </div>
+              </div>
+            </div>
+          )}
 
-              {stats.currentBooking && (
-                <Link href="/booking-history" className={styles.menuItemGreen}>
+          <div className={styles.mainGrid}>
+            {/* Quick Actions */}
+            <div className={styles.card}>
+              <h2 className={styles.cardTitle}>เมนูด่วน</h2>
+              <div className={styles.menuList}>
+                <Link href="/rooms" className={styles.menuItemGold}>
                   <div className={styles.menuItemContent}>
-                    <span className={styles.menuIcon}>📋</span>
-                    <span className={styles.menuText}>ประวัติการจอง</span>
+                    <span className={styles.menuIcon}>🏨</span>
+                    <span className={styles.menuText}>ดูห้องพักว่าง</span>
                   </div>
                   <span className={styles.menuArrow}>→</span>
                 </Link>
-              )}
-            </div>
-          </div>
 
-          {/* Announcements */}
-          <div className={styles.card}>
-            <h2 className={styles.cardTitle}>ประกาศล่าสุด</h2>
-            <div className={styles.announcementList}>
-              {stats.announcements.length > 0 ? (
-                stats.announcements.map((announcement) => (
-                  <div key={announcement._id} className={styles.announcementItem}>
-                    <h3 className={styles.announcementTitle}>
-                      {announcement.title}
-                    </h3>
-                    <p className={styles.announcementContent}>
-                      {announcement.content}
-                    </p>
-                    <p className={styles.announcementDate}>
-                      {new Date(announcement.createdAt).toLocaleDateString('th-TH')}
-                    </p>
+                <Link href="/utilities" className={styles.menuItemBlue}>
+                  <div className={styles.menuItemContent}>
+                    <span className={styles.menuIcon}>💡</span>
+                    <span className={styles.menuText}>ค่าน้ำค่าไฟ</span>
                   </div>
-                ))
-              ) : (
-                <p className={styles.emptyState}>ไม่มีประกาศในขณะนี้</p>
-              )}
+                  {stats.unpaidBills > 0 && (
+                    <span className={styles.badge}>
+                      {stats.unpaidBills}
+                    </span>
+                  )}
+                </Link>
+
+                {stats.currentBooking && (
+                  <Link href="/booking-history" className={styles.menuItemGreen}>
+                    <div className={styles.menuItemContent}>
+                      <span className={styles.menuIcon}>📋</span>
+                      <span className={styles.menuText}>ประวัติการจอง</span>
+                    </div>
+                    <span className={styles.menuArrow}>→</span>
+                  </Link>
+                )}
+              </div>
+            </div>
+
+            {/* Announcements */}
+            <div className={styles.card}>
+              <h2 className={styles.cardTitle}>ประกาศล่าสุด</h2>
+              <div className={styles.announcementList}>
+                {stats.announcements.length > 0 ? (
+                  stats.announcements.map((announcement) => (
+                    <div key={announcement._id} className={styles.announcementItem}>
+                      <h3 className={styles.announcementTitle}>
+                        {announcement.title}
+                      </h3>
+                      <p className={styles.announcementContent}>
+                        {announcement.content}
+                      </p>
+                      <p className={styles.announcementDate}>
+                        {new Date(announcement.createdAt).toLocaleDateString('th-TH')}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className={styles.emptyState}>ไม่มีประกาศในขณะนี้</p>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+      <Footer />
+    </>
   );
 }

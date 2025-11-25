@@ -6,6 +6,9 @@ import axios from 'axios';
 import Link from 'next/link';
 import { AxiosErrorResponse } from '@/types';
 import styles from './login.module.css';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import BackButton from '@/components/BackButton';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -46,74 +49,81 @@ export default function LoginPage() {
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.wrapper}>
-        <div className={styles.header}>
-          <h2 className={styles.title}>
-            เข้าสู่ระบบหอพักนักศึกษา
-          </h2>
-        </div>
+    <>
+      <Navbar isLoggedIn={false} />
+      <div className={styles.container}>
+        <div className={styles.wrapper}>
+          <div style={{ marginBottom: '1rem' }}>
+            <BackButton />
+          </div>
+          <div className={styles.header}>
+            <h2 className={styles.title}>
+              เข้าสู่ระบบหอพักนักศึกษา
+            </h2>
+          </div>
 
-        <div className={styles.formContainer}>
-          <form className={styles.form} onSubmit={handleSubmit}>
-            {error && (
-              <div className={styles.errorBox}>
-                {error}
+          <div className={styles.formContainer}>
+            <form className={styles.form} onSubmit={handleSubmit}>
+              {error && (
+                <div className={styles.errorBox}>
+                  {error}
+                </div>
+              )}
+
+              <div className={styles.inputGroup}>
+                <div className={styles.fieldWrapper}>
+                  <label htmlFor="email" className={styles.label}>
+                    อีเมล
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    className={styles.input}
+                    placeholder="your@email.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  />
+                </div>
+
+                <div className={styles.fieldWrapper}>
+                  <label htmlFor="password" className={styles.label}>
+                    รหัสผ่าน
+                  </label>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    className={styles.input}
+                    placeholder="••••••••"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  />
+                </div>
               </div>
-            )}
 
-            <div className={styles.inputGroup}>
-              <div className={styles.fieldWrapper}>
-                <label htmlFor="email" className={styles.label}>
-                  อีเมล
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  className={styles.input}
-                  placeholder="your@email.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                />
+              <div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={styles.submitButton}
+                >
+                  {loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
+                </button>
               </div>
 
-              <div className={styles.fieldWrapper}>
-                <label htmlFor="password" className={styles.label}>
-                  รหัสผ่าน
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  className={styles.input}
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                />
+              <div className={styles.linkContainer}>
+                <Link href="/register" className={styles.link}>
+                  ยังไม่มีบัญชี? สมัครสมาชิก
+                </Link>
               </div>
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className={styles.submitButton}
-              >
-                {loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
-              </button>
-            </div>
-
-            <div className={styles.linkContainer}>
-              <Link href="/register" className={styles.link}>
-                ยังไม่มีบัญชี? สมัครสมาชิก
-              </Link>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
-    </div>
+      <Footer />
+    </>
   );
 }

@@ -5,8 +5,13 @@ const paymentSchema = new Schema<IPayment>(
   {
     bookingId: {
       type: String,
-      required: true,
+      required: false,
       ref: 'Booking',
+    },
+    utilityBillId: {
+      type: String,
+      required: false,
+      ref: 'UtilityBill',
     },
     userId: {
       type: String,
@@ -53,7 +58,13 @@ const paymentSchema = new Schema<IPayment>(
 
 // Indexes
 paymentSchema.index({ bookingId: 1 });
+paymentSchema.index({ utilityBillId: 1 });
 paymentSchema.index({ userId: 1 });
 paymentSchema.index({ status: 1 });
 
-export const Payment = mongoose.models.Payment || mongoose.model<IPayment>('Payment', paymentSchema);
+// Delete the model if it exists to ensure schema updates are applied
+if (mongoose.models.Payment) {
+  delete mongoose.models.Payment;
+}
+
+export const Payment = mongoose.model<IPayment>('Payment', paymentSchema);

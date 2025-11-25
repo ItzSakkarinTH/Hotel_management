@@ -172,10 +172,13 @@ export default function AdminDashboard() {
               <Link href="/admin/bookings" className={styles.actionGreen}>
                 <span className={styles.actionText}>จัดการการจอง</span>
               </Link>
-              <Link href="/admin/payments" className={styles.actionPurple}>
+              <Link href="/admin/utilities" className={styles.actionPurple}>
+                <span className={styles.actionText}>จัดการค่าน้ำค่าไฟ</span>
+              </Link>
+              <Link href="/admin/payments" className={styles.actionOrange}>
                 <span className={styles.actionText}>ตรวจสอบสลิป</span>
               </Link>
-              <Link href="/admin/announcements" className={styles.actionOrange}>
+              <Link href="/admin/announcements" className={styles.actionIndigo}>
                 <span className={styles.actionText}>ประกาศข่าวสาร</span>
               </Link>
             </div>

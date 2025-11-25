@@ -8,6 +8,7 @@ import { IBooking, AxiosErrorResponse } from '@/types';
 import styles from './BookingHistory.module.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import BackButton from '@/components/BackButton';
 
 export default function BookingHistoryPage() {
   const router = useRouter();
@@ -92,7 +93,9 @@ export default function BookingHistoryPage() {
           <div className={styles.header}>
             <h1 className={styles.title}>ประวัติการจอง</h1>
           </div>
-
+          <div style={{ marginBottom: '1rem' }}>
+            <BackButton />
+          </div>
           {error && (
             <div className={styles.errorBanner}>
               {error}

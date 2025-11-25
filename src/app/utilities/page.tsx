@@ -2,20 +2,35 @@
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { IUtilityBill, IRoom } from '@/types';
+import { IUtilityBill, IRoom, SlipData, OCRData } from '@/types';
 import styles from './Utilities.module.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import BackButton from '@/components/BackButton';
+import SlipReaderIntegrated from '@/components/SlipReader';
 
 interface UtilityBillWithDetails extends Omit<IUtilityBill, 'roomId'> {
     roomId: IRoom;
+    payment?: {
+        _id: string;
+        status: string;
+        slipImage: string;
+        createdAt: string;
+    };
 }
 
 export default function UtilitiesPage() {
     const [bills, setBills] = useState<UtilityBillWithDetails[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'all' | 'paid' | 'unpaid'>('all');
+
+    // Payment modal states
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [selectedBill, setSelectedBill] = useState<UtilityBillWithDetails | null>(null);
+    const [slipImage, setSlipImage] = useState<string>('');
+    const [ocrData, setOcrData] = useState<OCRData | null>(null);
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         fetchBills();
@@ -24,14 +39,78 @@ export default function UtilitiesPage() {
     const fetchBills = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('/api/utilities', {
+
+            // Fetch bills
+            const billsRes = await axios.get('/api/utilities', {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            setBills(response.data.data);
+
+            // Fetch payments
+            const paymentsRes = await axios.get('/api/payments', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            // Map payments to bills
+            const billsWithPayments = billsRes.data.data.map((bill: UtilityBillWithDetails) => {
+                const payment = paymentsRes.data.data.find(
+                    (p: { utilityBillId?: string }) => p.utilityBillId === bill._id
+                );
+                return {
+                    ...bill,
+                    payment: payment || null,
+                };
+            });
+
+            setBills(billsWithPayments);
         } catch (error) {
             console.error('Error fetching bills:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handlePayment = (bill: UtilityBillWithDetails) => {
+        setSelectedBill(bill);
+        setShowPaymentModal(true);
+        setSlipImage('');
+        setOcrData(null);
+        setError('');
+    };
+
+    const handlePaymentSubmit = async () => {
+        if (!slipImage || !selectedBill) {
+            setError('กรุณาอัพโหลดสลิปการโอนเงิน');
+            return;
+        }
+
+        setSubmitting(true);
+        setError('');
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.post(
+                '/api/payments',
+                {
+                    utilityBillId: selectedBill._id,
+                    amount: selectedBill.totalCost,
+                    slipImage,
+                    ocrData,
+                },
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+
+            if (response.data.success) {
+                alert('ส่งสลิปการโอนเงินสำเร็จ! รอการตรวจสอบจากผู้ดูแลระบบ');
+                setShowPaymentModal(false);
+                fetchBills();
+            }
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { error?: string } } };
+            setError(err.response?.data?.error || 'เกิดข้อผิดพลาดในการส่งสลิป');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -60,11 +139,10 @@ export default function UtilitiesPage() {
             <Navbar isLoggedIn={true} />
             <div className={styles.container}>
                 <div className={styles.content}>
+                    <h1 className={styles.title}>ค่าน้ำค่าไฟ</h1>
                     <div style={{ marginBottom: '1rem' }}>
                         <BackButton />
                     </div>
-                    <h1 className={styles.title}>ค่าน้ำค่าไฟ</h1>
-
                     {/* Filters */}
                     <div className={styles.filterContainer}>
                         <button
@@ -165,8 +243,43 @@ export default function UtilitiesPage() {
                                     </div>
                                 )}
 
-                                {!bill.paid && (
-                                    <button className={styles.payButton}>
+                                {/* Payment Status */}
+                                {bill.payment && (
+                                    <div className={styles.paymentInfo}>
+                                        <div className={styles.paymentStatus}>
+                                            {bill.payment.status === 'pending' && (
+                                                <span className={styles.statusPending}>
+                                                    ⏳ รอตรวจสอบสลิป
+                                                </span>
+                                            )}
+                                            {bill.payment.status === 'approved' && (
+                                                <span className={styles.statusApproved}>
+                                                    ✓ อนุมัติแล้ว
+                                                </span>
+                                            )}
+                                            {bill.payment.status === 'rejected' && (
+                                                <span className={styles.statusRejected}>
+                                                    ✗ ปฏิเสธ
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className={styles.paymentDate}>
+                                            ส่งสลิปเมื่อ: {new Date(bill.payment.createdAt).toLocaleDateString('th-TH', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {!bill.paid && !bill.payment && (
+                                    <button
+                                        className={styles.payButton}
+                                        onClick={() => handlePayment(bill)}
+                                    >
                                         ชำระเงิน
                                     </button>
                                 )}
@@ -214,6 +327,64 @@ export default function UtilitiesPage() {
                     )}
                 </div>
             </div>
+
+            {/* Payment Modal */}
+            {showPaymentModal && selectedBill && (
+                <div className={styles.modalOverlay} onClick={() => setShowPaymentModal(false)}>
+                    <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+                        <h2 className={styles.modalTitle}>ชำระค่าน้ำค่าไฟ</h2>
+
+                        <div className={styles.modalInfo}>
+                            <p><strong>เดือน:</strong> {getMonthName(selectedBill.month)}</p>
+                            <p><strong>ห้อง:</strong> {selectedBill.roomId?.roomNumber}</p>
+                            <p><strong>จำนวนเงิน:</strong> {selectedBill.totalCost.toLocaleString()} ฿</p>
+                        </div>
+
+                        {error && (
+                            <div className={styles.errorBanner}>
+                                {error}
+                            </div>
+                        )}
+
+                        <div className={styles.uploadContainer}>
+                            <SlipReaderIntegrated
+                                expectedAmount={selectedBill.totalCost}
+                                onSlipVerified={(data: SlipData) => {
+                                    setSlipImage(data.slipImage);
+                                    setOcrData(data.ocrData);
+                                    setError('');
+                                }}
+                                onError={(err: string) => setError(err)}
+                            />
+                        </div>
+
+                        {ocrData && (
+                            <div className={styles.ocrInfo}>
+                                <h3>ข้อมูลจากสลิป (OCR)</h3>
+                                <pre>{JSON.stringify(ocrData, null, 2)}</pre>
+                            </div>
+                        )}
+
+                        <div className={styles.modalActions}>
+                            <button
+                                onClick={() => setShowPaymentModal(false)}
+                                disabled={submitting}
+                                className={styles.cancelButton}
+                            >
+                                ยกเลิก
+                            </button>
+                            <button
+                                onClick={handlePaymentSubmit}
+                                disabled={!slipImage || submitting}
+                                className={styles.submitButton}
+                            >
+                                {submitting ? 'กำลังส่ง...' : 'ส่งสลิป'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <Footer />
         </>
     );

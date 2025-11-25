@@ -64,9 +64,20 @@ export const POST = requireAuth(async (request: NextRequest) => {
 
     const user = (request as AuthRequest).user;
     const body = await request.json();
-    const { bookingId, slipImage, ocrData, qrData } = body;
+    const { bookingId, utilityBillId, amount, slipImage, ocrData, qrData } = body;
 
-    if (!bookingId || !slipImage) {
+    if (!slipImage) {
+      return NextResponse.json<ApiResponse>(
+        {
+          success: false,
+          error: 'กรุณาอัพโหลดสลิปการโอนเงิน',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Check if it's a booking payment or utility payment
+    if (!bookingId && !utilityBillId) {
       return NextResponse.json<ApiResponse>(
         {
           success: false,
@@ -76,28 +87,37 @@ export const POST = requireAuth(async (request: NextRequest) => {
       );
     }
 
-    // Get booking to fetch totalAmount
-    const booking = await Booking.findById(bookingId);
+    let paymentAmount = amount;
+    let paymentType = 'utilities';
 
-    if (!booking) {
-      return NextResponse.json<ApiResponse>(
-        {
-          success: false,
-          error: 'ไม่พบข้อมูลการจอง',
-        },
-        { status: 404 }
-      );
+    // If it's a booking payment, get amount from booking
+    if (bookingId) {
+      const booking = await Booking.findById(bookingId);
+
+      if (!booking) {
+        return NextResponse.json<ApiResponse>(
+          {
+            success: false,
+            error: 'ไม่พบข้อมูลการจอง',
+          },
+          { status: 404 }
+        );
+      }
+
+      paymentAmount = booking.totalAmount;
+      paymentType = 'deposit';
     }
 
-    // Create payment with amount from booking
+    // Create payment
     const payment = await Payment.create({
       userId: user?.userId,
-      bookingId,
-      amount: booking.totalAmount,
+      bookingId: bookingId || undefined,
+      utilityBillId: utilityBillId || undefined,
+      amount: paymentAmount,
       slipImage,
       ocrData: ocrData || qrData,
       status: 'pending',
-      type: 'deposit',
+      type: paymentType,
     });
 
     return NextResponse.json<ApiResponse>(

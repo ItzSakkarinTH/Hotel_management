@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { Payment } from '@/models/Payment';
-import { Booking } from '@/models/Booking';
-import { Room } from '@/models/Room';
-import { ApiResponse, PaymentType, PaymentStatus, BookingStatus, RoomStatus } from '@/types';
+import { ApiResponse } from '@/types';
 import { requireAuth, AuthRequest } from '@/middleware/auth';
+
+interface PaymentQuery {
+  userId?: string;
+  bookingId?: string;
+  status?: string;
+}
 
 // GET all payments
 export const GET = requireAuth(async (request: NextRequest) => {
@@ -12,17 +16,16 @@ export const GET = requireAuth(async (request: NextRequest) => {
     await connectDB();
 
     const user = (request as AuthRequest).user;
-    
-    let query: any = {};
-    
+    const query: PaymentQuery = {};
+
     // Users can only see their own payments
     if (user?.role === 'user') {
       query.userId = user.userId;
     }
 
     const payments = await Payment.find(query)
-      .populate('bookingId')
       .populate('userId', 'firstName lastName email')
+      .populate('bookingId')
       .sort({ createdAt: -1 });
 
     return NextResponse.json<ApiResponse>(
@@ -32,19 +35,20 @@ export const GET = requireAuth(async (request: NextRequest) => {
       },
       { status: 200 }
     );
-  } catch (error: any) {
-    console.error('Get payments error:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Get payments error:', err);
     return NextResponse.json<ApiResponse>(
       {
         success: false,
-        error: error.message || 'เกิดข้อผิดพลาดในการดึงข้อมูลการชำระเงิน',
+        error: err.message || 'เกิดข้อผิดพลาดในการดึงข้อมูลการชำระเงิน',
       },
       { status: 500 }
     );
   }
 });
 
-// POST create payment (upload slip)
+// POST create payment
 export const POST = requireAuth(async (request: NextRequest) => {
   try {
     await connectDB();
@@ -53,65 +57,41 @@ export const POST = requireAuth(async (request: NextRequest) => {
     const body = await request.json();
     const { bookingId, slipImage, ocrData } = body;
 
-    // Validate required fields
     if (!bookingId || !slipImage) {
       return NextResponse.json<ApiResponse>(
         {
           success: false,
-          error: 'กรุณาอัพโหลดสลิปการโอนเงิน',
+          error: 'กรุณากรอกข้อมูลให้ครบถ้วน',
         },
         { status: 400 }
       );
     }
 
-    // Check if booking exists
-    const booking = await Booking.findById(bookingId);
-    if (!booking) {
-      return NextResponse.json<ApiResponse>(
-        {
-          success: false,
-          error: 'ไม่พบข้อมูลการจอง',
-        },
-        { status: 404 }
-      );
-    }
-
-    // Verify booking belongs to user
-    if (booking.userId !== user?.userId) {
-      return NextResponse.json<ApiResponse>(
-        {
-          success: false,
-          error: 'คุณไม่มีสิทธิ์ดำเนินการนี้',
-        },
-        { status: 403 }
-      );
-    }
-
     // Create payment
     const payment = await Payment.create({
-      bookingId,
       userId: user?.userId,
-      amount: booking.totalAmount,
-      type: PaymentType.DEPOSIT,
+      bookingId,
       slipImage,
-      ocrData: ocrData || null,
-      status: PaymentStatus.PENDING,
+      ocrData,
+      status: 'pending',
+      type: 'deposit',
     });
 
     return NextResponse.json<ApiResponse>(
       {
         success: true,
         data: payment,
-        message: 'ส่งสลิปการโอนเงินสำเร็จ รอการตรวจสอบ',
+        message: 'ส่งสลิปการชำระเงินสำเร็จ รอการตรวจสอบ',
       },
       { status: 201 }
     );
-  } catch (error: any) {
-    console.error('Create payment error:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Create payment error:', err);
     return NextResponse.json<ApiResponse>(
       {
         success: false,
-        error: error.message || 'เกิดข้อผิดพลาดในการส่งสลิป',
+        error: err.message || 'เกิดข้อผิดพลาดในการส่งสลิปการชำระเงิน',
       },
       { status: 500 }
     );

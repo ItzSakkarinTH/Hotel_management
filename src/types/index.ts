@@ -78,6 +78,33 @@ export enum PaymentStatus {
   REJECTED = 'rejected'
 }
 
+// Slip Reader Types
+export interface QRData {
+  merchantID: string;
+  amount: string;
+  reference: string;
+  billPaymentRef1: string;
+  billPaymentRef2: string;
+}
+
+export interface OCRData {
+  amount: string | null;
+  fee: string | null;
+  date: string | null;
+  time: string | null;
+  reference: string | null;
+  transactionNo: string | null;
+  fromAccount: string | null;
+  toAccount: string | null;
+  transferType: string | null;
+}
+
+export interface SlipData {
+  qrData: QRData | null;
+  ocrData: OCRData | null;
+  slipImage: string;
+}
+
 export interface IPayment {
   _id: string;
   bookingId: string;
@@ -85,7 +112,7 @@ export interface IPayment {
   amount: number;
   type: PaymentType;
   slipImage: string;
-  ocrData?: any;
+  ocrData?: OCRData | QRData;
   status: PaymentStatus;
   verifiedBy?: string;
   verifiedAt?: Date;
@@ -118,14 +145,14 @@ export interface IAnnouncement {
   title: string;
   content: string;
   priority: 'low' | 'medium' | 'high';
-  publishedBy: string | Partial<IUser>; 
+  publishedBy: string | Partial<IUser>;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
 // API Response Types
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   message?: string;
@@ -140,3 +167,16 @@ export interface JWTPayload {
   iat?: number;
   exp?: number;
 }
+
+// Error Types for Axios
+export interface AxiosErrorResponse {
+  response?: {
+    data?: {
+      error?: string;
+      message?: string;
+    };
+    status?: number;
+  };
+  message?: string;
+}
+

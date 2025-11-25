@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const activeOnly = searchParams.get('active') === 'true';
 
     const query = activeOnly ? { isActive: true } : {};
-    
+
     let announcements = await Announcement.find(query)
       .sort({ createdAt: -1 });
 
@@ -30,10 +30,11 @@ export async function GET(request: NextRequest) {
       { success: true, data: announcements },
       { status: 200 }
     );
-  } catch (error: any) {
-    console.error('Get announcements error:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Get announcements error:', err);
     return NextResponse.json<ApiResponse>(
-      { success: false, error: error.message || 'เกิดข้อผิดพลาดในการดึงข้อมูลประกาศ' },
+      { success: false, error: err.message || 'เกิดข้อผิดพลาดในการดึงข้อมูลประกาศ' },
       { status: 500 }
     );
   }
@@ -74,10 +75,11 @@ export const POST = requireAdmin(async (request: NextRequest) => {
       { success: true, data: announcement, message: 'สร้างประกาศสำเร็จ' },
       { status: 201 }
     );
-  } catch (error: any) {
-    console.error('Create announcement error:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Create announcement error:', err);
     return NextResponse.json<ApiResponse>(
-      { success: false, error: error.message || 'เกิดข้อผิดพลาดในการสร้างประกาศ' },
+      { success: false, error: err.message || 'เกิดข้อผิดพลาดในการสร้างประกาศ' },
       { status: 500 }
     );
   }

@@ -58,9 +58,10 @@ export default function AdminAnnouncementsPage() {
       setShowModal(false);
       resetForm();
       fetchAnnouncements();
-    } catch (error: any) {
-      alert(error.response?.data?.error || 'เกิดข้อผิดพลาด');
-    }
+      } catch (error: unknown) {
+        const e = error as { response?: { data?: { error?: string } } };
+        alert(e.response?.data?.error || 'เกิดข้อผิดพลาด');
+      }
   };
 
   const handleEdit = (announcement: IAnnouncement) => {
@@ -84,9 +85,10 @@ export default function AdminAnnouncementsPage() {
       });
       alert('ลบประกาศสำเร็จ');
       fetchAnnouncements();
-    } catch (error: any) {
-      alert(error.response?.data?.error || 'เกิดข้อผิดพลาด');
-    }
+      } catch (error: unknown) {
+        const e = error as { response?: { data?: { error?: string } } };
+        alert(e.response?.data?.error || 'เกิดข้อผิดพลาด');
+      }
   };
 
   const toggleActive = async (id: string, currentStatus: boolean) => {
@@ -98,9 +100,10 @@ export default function AdminAnnouncementsPage() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       fetchAnnouncements();
-    } catch (error: any) {
-      alert(error.response?.data?.error || 'เกิดข้อผิดพลาด');
-    }
+      } catch (error: unknown) {
+        const e = error as { response?: { data?: { error?: string } } };
+        alert(e.response?.data?.error || 'เกิดข้อผิดพลาด');
+      }
   };
 
   const resetForm = () => {

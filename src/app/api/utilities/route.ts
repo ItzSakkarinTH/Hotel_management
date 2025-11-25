@@ -5,6 +5,11 @@ import { Room } from '@/models/Room';
 import { ApiResponse } from '@/types';
 import { requireAuth, requireAdmin, AuthRequest } from '@/middleware/auth';
 
+interface UtilityQuery {
+  userId?: string;
+  month?: string;
+}
+
 // GET utility bills
 export const GET = requireAuth(async (request: NextRequest) => {
   try {
@@ -15,7 +20,7 @@ export const GET = requireAuth(async (request: NextRequest) => {
     const month = searchParams.get('month');
     const userId = searchParams.get('userId');
 
-    let query: any = {};
+    const query: UtilityQuery = {};
 
     // Users can only see their own bills
     if (user?.role === 'user') {
@@ -41,12 +46,13 @@ export const GET = requireAuth(async (request: NextRequest) => {
       },
       { status: 200 }
     );
-  } catch (error: any) {
-    console.error('Get utility bills error:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Get utility bills error:', err);
     return NextResponse.json<ApiResponse>(
       {
         success: false,
-        error: error.message || 'เกิดข้อผิดพลาดในการดึงข้อมูลค่าน้ำค่าไฟ',
+        error: err.message || 'เกิดข้อผิดพลาดในการดึงข้อมูลค่าน้ำค่าไฟ',
       },
       { status: 500 }
     );
@@ -130,12 +136,13 @@ export const POST = requireAdmin(async (request: NextRequest) => {
       },
       { status: 201 }
     );
-  } catch (error: any) {
-    console.error('Create utility bill error:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Create utility bill error:', err);
     return NextResponse.json<ApiResponse>(
       {
         success: false,
-        error: error.message || 'เกิดข้อผิดพลาดในการสร้างบิลค่าน้ำค่าไฟ',
+        error: err.message || 'เกิดข้อผิดพลาดในการสร้างบิลค่าน้ำค่าไฟ',
       },
       { status: 500 }
     );

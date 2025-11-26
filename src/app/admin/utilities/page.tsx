@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Pencil, Trash2 } from 'lucide-react';
 import { IUtilityBill, IRoom } from '@/types';
 import styles from './AdminUtilities.module.css';
 import Navbar from '@/components/Navbar';
@@ -31,6 +32,7 @@ export default function AdminUtilitiesPage() {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [filter, setFilter] = useState<'all' | 'paid' | 'unpaid'>('all');
+    const [editingBill, setEditingBill] = useState<UtilityBillWithDetails | null>(null);
     const [formData, setFormData] = useState({
         roomId: '',
         month: '',
@@ -110,11 +112,20 @@ export default function AdminUtilitiesPage() {
                 electricityCost: electricityUsage * selectedRoom.electricityRate,
             };
 
-            await axios.post('/api/utilities', data, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            if (editingBill) {
+                // Update existing bill
+                await axios.put(`/api/utilities/${editingBill._id}`, data, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                alert('แก้ไขค่าน้ำค่าไฟสำเร็จ');
+            } else {
+                // Create new bill
+                await axios.post('/api/utilities', data, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                alert('บันทึกค่าน้ำค่าไฟสำเร็จ');
+            }
 
-            alert('บันทึกค่าน้ำค่าไฟสำเร็จ');
             setShowModal(false);
             resetForm();
             fetchData();
@@ -124,23 +135,15 @@ export default function AdminUtilitiesPage() {
         }
     };
 
-    const handleMarkAsPaid = async (billId: string) => {
-        if (!confirm('ยืนยันการชำระเงินแล้ว?')) return;
-
-        try {
-            const token = localStorage.getItem('token');
-            await axios.patch(
-                `/api/utilities/${billId}`,
-                { paid: true },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-
-            alert('อัพเดทสถานะสำเร็จ');
-            fetchData();
-        } catch (error: unknown) {
-            const err = error as { response?: { data?: { error?: string } } };
-            alert(err.response?.data?.error || 'เกิดข้อผิดพลาด');
-        }
+    const handleEdit = (bill: UtilityBillWithDetails) => {
+        setEditingBill(bill);
+        setFormData({
+            roomId: typeof bill.roomId === 'string' ? bill.roomId : bill.roomId._id,
+            month: bill.month,
+            waterUsage: bill.waterUsage.toString(),
+            electricityUsage: bill.electricityUsage.toString(),
+        });
+        setShowModal(true);
     };
 
     const handleDelete = async (billId: string) => {
@@ -161,6 +164,7 @@ export default function AdminUtilitiesPage() {
     };
 
     const resetForm = () => {
+        setEditingBill(null);
         setFormData({
             roomId: '',
             month: '',
@@ -269,19 +273,19 @@ export default function AdminUtilitiesPage() {
                                             )}
                                         </td>
                                         <td className={styles.actionCell}>
-                                            {!bill.paid && (
-                                                <button
-                                                    onClick={() => handleMarkAsPaid(bill._id)}
-                                                    className={styles.paidButton}
-                                                >
-                                                    ✓ ชำระแล้ว
-                                                </button>
-                                            )}
+                                            <button
+                                                onClick={() => handleEdit(bill)}
+                                                className={styles.iconButton}
+                                                title="แก้ไข"
+                                            >
+                                                <Pencil size={18} />
+                                            </button>
                                             <button
                                                 onClick={() => handleDelete(bill._id)}
-                                                className={styles.deleteButton}
+                                                className={styles.deleteIconButton}
+                                                title="ลบ"
                                             >
-                                                ลบ
+                                                <Trash2 size={18} />
                                             </button>
                                         </td>
                                     </tr>
@@ -333,7 +337,9 @@ export default function AdminUtilitiesPage() {
                     {showModal && (
                         <div className={styles.modalOverlay}>
                             <div className={styles.modal}>
-                                <h2 className={styles.modalTitle}>เพิ่มบิลค่าน้ำค่าไฟ</h2>
+                                <h2 className={styles.modalTitle}>
+                                    {editingBill ? 'แก้ไขบิลค่าน้ำค่าไฟ' : 'เพิ่มบิลค่าน้ำค่าไฟ'}
+                                </h2>
 
                                 <form onSubmit={handleSubmit} className={styles.form}>
                                     <div className={styles.formGroup}>
@@ -343,6 +349,7 @@ export default function AdminUtilitiesPage() {
                                             value={formData.roomId}
                                             onChange={(e) => setFormData({ ...formData, roomId: e.target.value })}
                                             className={styles.select}
+                                            disabled={!!editingBill}
                                         >
                                             <option value="">-- เลือกห้อง --</option>
                                             {rooms
@@ -426,7 +433,7 @@ export default function AdminUtilitiesPage() {
                                             ยกเลิก
                                         </button>
                                         <button type="submit" className={styles.submitButton}>
-                                            บันทึก
+                                            {editingBill ? 'บันทึกการแก้ไข' : 'บันทึก'}
                                         </button>
                                     </div>
                                 </form>

@@ -35,6 +35,13 @@ export const GET = requireAuth(async (request: NextRequest) => {
     const payments = await Payment.find(query)
       .populate('userId', 'firstName lastName email')
       .populate('bookingId')
+      .populate({
+        path: 'utilityBillId',
+        populate: {
+          path: 'roomId',
+          select: 'roomNumber'
+        }
+      })
       .sort({ createdAt: -1 });
 
     return NextResponse.json<ApiResponse>(

@@ -175,36 +175,40 @@
     align-items: center;
 }
 
-.paidButton {
-    padding: 0.5rem 1rem;
-    background-color: #10b981;
+.iconButton {
+    padding: 0.5rem;
+    background-color: #3b82f6;
     color: white;
     border: none;
     border-radius: 0.375rem;
-    font-size: 0.875rem;
-    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.paidButton:hover {
-    background-color: #059669;
+.iconButton:hover {
+    background-color: #2563eb;
+    transform: translateY(-1px);
 }
 
-.deleteButton {
-    padding: 0.5rem 1rem;
+.deleteIconButton {
+    padding: 0.5rem;
     background-color: #ef4444;
     color: white;
     border: none;
     border-radius: 0.375rem;
-    font-size: 0.875rem;
-    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.deleteButton:hover {
+.deleteIconButton:hover {
     background-color: #dc2626;
+    transform: translateY(-1px);
 }
 
 /* Empty State */

@@ -33,7 +33,7 @@ interface Payment {
 export default function UtilityPaymentsPage() {
     const [payments, setPayments] = useState<Payment[]>([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+    const [filter, setFilter] = useState<'all' | 'pending' | 'verified' | 'rejected'>('all');
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
     const [showModal, setShowModal] = useState(false);
     const [updating, setUpdating] = useState(false);
@@ -62,8 +62,8 @@ export default function UtilityPaymentsPage() {
         }
     };
 
-    const handleUpdateStatus = async (paymentId: string, status: 'approved' | 'rejected') => {
-        if (!confirm(`ยืนยันการ${status === 'approved' ? 'อนุมัติ' : 'ปฏิเสธ'}สลิปนี้?`)) return;
+    const handleUpdateStatus = async (paymentId: string, status: 'verified' | 'rejected') => {
+        if (!confirm(`ยืนยันการ${status === 'verified' ? 'อนุมัติ' : 'ปฏิเสธ'}สลิปนี้?`)) return;
 
         setUpdating(true);
         try {
@@ -74,7 +74,7 @@ export default function UtilityPaymentsPage() {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            alert(`${status === 'approved' ? 'อนุมัติ' : 'ปฏิเสธ'}สลิปสำเร็จ`);
+            alert(`${status === 'verified' ? 'อนุมัติ' : 'ปฏิเสธ'}สลิปสำเร็จ`);
             setShowModal(false);
             fetchPayments();
         } catch (error) {
@@ -132,10 +132,10 @@ export default function UtilityPaymentsPage() {
                             รอตรวจสอบ ({payments.filter(p => p.status === 'pending').length})
                         </button>
                         <button
-                            onClick={() => setFilter('approved')}
-                            className={`${styles.filterButton} ${filter === 'approved' ? styles.filterActiveApproved : ''}`}
+                            onClick={() => setFilter('verified')}
+                            className={`${styles.filterButton} ${filter === 'verified' ? styles.filterActiveApproved : ''}`}
                         >
-                            อนุมัติแล้ว ({payments.filter(p => p.status === 'approved').length})
+                            อนุมัติแล้ว ({payments.filter(p => p.status === 'verified').length})
                         </button>
                         <button
                             onClick={() => setFilter('rejected')}
@@ -185,7 +185,7 @@ export default function UtilityPaymentsPage() {
                                             {payment.status === 'pending' && (
                                                 <span className={styles.badgePending}>รอตรวจสอบ</span>
                                             )}
-                                            {payment.status === 'approved' && (
+                                            {payment.status === 'verified' && (
                                                 <span className={styles.badgeApproved}>อนุมัติแล้ว</span>
                                             )}
                                             {payment.status === 'rejected' && (
@@ -257,7 +257,7 @@ export default function UtilityPaymentsPage() {
                                     {updating ? 'กำลังดำเนินการ...' : 'ปฏิเสธ'}
                                 </button>
                                 <button
-                                    onClick={() => handleUpdateStatus(selectedPayment._id, 'approved')}
+                                    onClick={() => handleUpdateStatus(selectedPayment._id, 'verified')}
                                     disabled={updating}
                                     className={styles.approveButton}
                                 >
@@ -268,7 +268,7 @@ export default function UtilityPaymentsPage() {
 
                         {selectedPayment.status !== 'pending' && (
                             <div className={styles.statusInfo}>
-                                สถานะ: {selectedPayment.status === 'approved' ? 'อนุมัติแล้ว' : 'ปฏิเสธแล้ว'}
+                                สถานะ: {selectedPayment.status === 'verified' ? 'อนุมัติแล้ว' : 'ปฏิเสธแล้ว'}
                             </div>
                         )}
 
